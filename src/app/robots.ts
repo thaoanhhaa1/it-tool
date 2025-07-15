@@ -1,7 +1,7 @@
 import { MetadataRoute } from 'next';
 
 export default function robots(): MetadataRoute.Robots {
-    const baseUrl = 'https://convert-json.vercel.app'; // Thay đổi URL này theo domain thực tế
+    const baseUrl = 'https://it-tool-two.vercel.app'; // Thay đổi URL này theo domain thực tế
 
     return {
         rules: {

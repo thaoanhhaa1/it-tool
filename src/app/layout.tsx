@@ -40,7 +40,7 @@ export const metadata: Metadata = {
         address: false,
         telephone: false,
     },
-    metadataBase: new URL('https://convert-json.vercel.app'), // Thay đổi URL này theo domain thực tế
+    metadataBase: new URL('https://it-tool-two.vercel.app'), // Thay đổi URL này theo domain thực tế
     alternates: {
         canonical: '/',
     },
@@ -48,7 +48,7 @@ export const metadata: Metadata = {
         title: 'JSON to TypeScript Converter - Chuyển đổi JSON sang Interface miễn phí',
         description:
             'Công cụ miễn phí chuyển đổi JSON sang TypeScript interface. Hỗ trợ camelCase, nested objects, arrays và nhiều tùy chọn khác.',
-        url: 'https://convert-json.vercel.app', // Thay đổi URL này theo domain thực tế
+        url: 'https://it-tool-two.vercel.app', // Thay đổi URL này theo domain thực tế
         siteName: 'JSON to TypeScript Converter',
         images: [
             {
@@ -96,9 +96,6 @@ export default function RootLayout({
     return (
         <html lang='vi' suppressHydrationWarning>
             <head>
-                {/* Icon */}
-                <link rel='icon' href='/coding.ico' />
-
                 {/* Structured Data for SEO */}
                 <script
                     type='application/ld+json'
@@ -109,7 +106,7 @@ export default function RootLayout({
                             name: 'JSON to TypeScript Converter',
                             description:
                                 'Công cụ miễn phí chuyển đổi JSON sang TypeScript interface. Hỗ trợ camelCase, nested objects, arrays và nhiều tùy chọn khác.',
-                            url: 'https://convert-json.vercel.app',
+                            url: 'https://it-tool-two.vercel.app',
                             applicationCategory: 'DeveloperApplication',
                             operatingSystem: 'Any',
                             permissions: 'none',
