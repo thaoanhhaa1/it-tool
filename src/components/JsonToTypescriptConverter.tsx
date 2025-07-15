@@ -18,6 +18,12 @@ type JsonArray = JsonValue[];
 type JsonObject = { [key: string]: JsonValue };
 type JsonValue = JsonPrimitive | JsonArray | JsonObject;
 
+// Interface collector for separate interfaces
+interface InterfaceCollector {
+    interfaces: Map<string, string>;
+    usedNames: Set<string>;
+}
+
 // Type guard functions
 function isJsonObject(value: JsonValue): value is JsonObject {
     return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -33,16 +39,49 @@ function jsonToTypeScript(
     interfaceName: string = 'GeneratedInterface',
     useCamelCaseFields: boolean = false,
     useProperCamelCase: boolean = false,
+    separateInterfaces: boolean = false,
 ): string {
     try {
         const obj: unknown = JSON.parse(jsonString);
-        return convertObjectToInterface(
-            obj as JsonValue,
-            interfaceName,
-            0,
-            useCamelCaseFields,
-            useProperCamelCase,
-        );
+
+        if (separateInterfaces) {
+            const collector: InterfaceCollector = {
+                interfaces: new Map(),
+                usedNames: new Set(),
+            };
+
+            const mainInterfaceBody = convertObjectToSeparateInterface(
+                obj as JsonValue,
+                interfaceName,
+                0,
+                useCamelCaseFields,
+                useProperCamelCase,
+                collector,
+            );
+
+            // Build the final result with all interfaces
+            const allInterfaces: string[] = [];
+
+            // Add nested interfaces first
+            for (const [name, definition] of collector.interfaces) {
+                allInterfaces.push(definition);
+            }
+
+            // Add main interface last
+            allInterfaces.push(
+                `interface ${interfaceName} {\n${mainInterfaceBody}}`,
+            );
+
+            return allInterfaces.join('\n\n');
+        } else {
+            return convertObjectToInterface(
+                obj as JsonValue,
+                interfaceName,
+                0,
+                useCamelCaseFields,
+                useProperCamelCase,
+            );
+        }
     } catch (error) {
         throw new Error(
             error instanceof Error ? error.message : 'JSON không hợp lệ',
@@ -120,6 +159,88 @@ function convertObjectToInterface(
     return interfaceString;
 }
 
+function convertObjectToSeparateInterface(
+    obj: JsonValue,
+    interfaceName: string,
+    depth: number = 0,
+    useCamelCaseFields: boolean = false,
+    useProperCamelCase: boolean = false,
+    collector: InterfaceCollector,
+): string {
+    const indent = '  '.repeat(depth);
+
+    if (isJsonArray(obj)) {
+        if (obj.length === 0) {
+            return 'unknown[]';
+        }
+        const firstElement = obj[0];
+        if (isJsonObject(firstElement)) {
+            const elementInterfaceName = getUniqueInterfaceName(
+                `${interfaceName}Item`,
+                collector,
+            );
+            const elementInterface = convertObjectToSeparateInterface(
+                firstElement,
+                elementInterfaceName,
+                0,
+                useCamelCaseFields,
+                useProperCamelCase,
+                collector,
+            );
+
+            collector.interfaces.set(
+                elementInterfaceName,
+                `interface ${elementInterfaceName} {\n${elementInterface}}`,
+            );
+            return `${elementInterfaceName}[]`;
+        } else {
+            return `${getTypeFromValueSeparate(
+                firstElement,
+                undefined,
+                0,
+                useCamelCaseFields,
+                useProperCamelCase,
+                collector,
+            )}[]`;
+        }
+    }
+
+    if (!isJsonObject(obj)) {
+        return getTypeFromValueSeparate(
+            obj,
+            undefined,
+            0,
+            useCamelCaseFields,
+            useProperCamelCase,
+            collector,
+        );
+    }
+
+    let interfaceBody = '';
+
+    for (const [key, value] of Object.entries(obj)) {
+        // Convert field name based on options
+        let fieldName = key;
+        if (useProperCamelCase) {
+            fieldName = toProperCamelCase(key);
+        } else if (useCamelCaseFields) {
+            fieldName = toCamelCase(key);
+        }
+
+        const type = getTypeFromValueSeparate(
+            value,
+            `${capitalizeFirstLetter(key)}`,
+            depth + 1,
+            useCamelCaseFields,
+            useProperCamelCase,
+            collector,
+        );
+        interfaceBody += `${indent}  ${fieldName}: ${type};\n`;
+    }
+
+    return interfaceBody;
+}
+
 function getTypeFromValue(
     value: JsonValue,
     typeName?: string,
@@ -168,6 +289,93 @@ function getTypeFromValue(
     return 'unknown';
 }
 
+function getTypeFromValueSeparate(
+    value: JsonValue,
+    typeName: string | undefined = undefined,
+    _depth: number = 0,
+    useCamelCaseFields: boolean = false,
+    useProperCamelCase: boolean = false,
+    collector: InterfaceCollector,
+): string {
+    if (value === null) return 'null';
+    if (typeof value === 'boolean') return 'boolean';
+    if (typeof value === 'number') return 'number';
+    if (typeof value === 'string') return 'string';
+
+    if (isJsonArray(value)) {
+        if (value.length === 0) return 'unknown[]';
+        const firstElement = value[0];
+        if (isJsonObject(firstElement)) {
+            const elementInterfaceName = getUniqueInterfaceName(
+                `${typeName}Item`,
+                collector,
+            );
+            const elementInterface = convertObjectToSeparateInterface(
+                firstElement,
+                elementInterfaceName,
+                0,
+                useCamelCaseFields,
+                useProperCamelCase,
+                collector,
+            );
+
+            collector.interfaces.set(
+                elementInterfaceName,
+                `interface ${elementInterfaceName} {\n${elementInterface}}`,
+            );
+            return `${elementInterfaceName}[]`;
+        }
+        return `${getTypeFromValueSeparate(
+            firstElement,
+            undefined,
+            0,
+            useCamelCaseFields,
+            useProperCamelCase,
+            collector,
+        )}[]`;
+    }
+
+    if (isJsonObject(value)) {
+        const nestedInterfaceName = getUniqueInterfaceName(
+            typeName || 'NestedInterface',
+            collector,
+        );
+        const nestedInterface = convertObjectToSeparateInterface(
+            value,
+            nestedInterfaceName,
+            0,
+            useCamelCaseFields,
+            useProperCamelCase,
+            collector,
+        );
+
+        collector.interfaces.set(
+            nestedInterfaceName,
+            `interface ${nestedInterfaceName} {\n${nestedInterface}}`,
+        );
+        return nestedInterfaceName;
+    }
+
+    // Fallback for unexpected values
+    return 'unknown';
+}
+
+function getUniqueInterfaceName(
+    baseName: string,
+    collector: InterfaceCollector,
+): string {
+    let counter = 0;
+    let name = baseName;
+
+    while (collector.usedNames.has(name)) {
+        counter++;
+        name = `${baseName}${counter}`;
+    }
+
+    collector.usedNames.add(name);
+    return name;
+}
+
 function capitalizeFirstLetter(string: string): string {
     return string.charAt(0).toUpperCase() + string.slice(1);
 }
@@ -191,6 +399,7 @@ export default function JsonToTypescriptConverter() {
     const [error, setError] = useState('');
     const [useCamelCaseFields, setUseCamelCaseFields] = useState(false);
     const [useProperCamelCase, setUseProperCamelCase] = useState(false);
+    const [separateInterfaces, setSeparateInterfaces] = useState(false);
 
     const handleConvert = () => {
         try {
@@ -200,6 +409,7 @@ export default function JsonToTypescriptConverter() {
                 interfaceName,
                 useCamelCaseFields,
                 useProperCamelCase,
+                separateInterfaces,
             );
             setTypescriptOutput(result);
         } catch (err) {
@@ -318,6 +528,24 @@ export default function JsonToTypescriptConverter() {
                             >
                                 Chuyển tên field sang camelCase (vd: user_name →
                                 userName)
+                            </Label>
+                        </div>
+
+                        <div className='flex items-center space-x-2'>
+                            <input
+                                id='separate-interfaces'
+                                type='checkbox'
+                                checked={separateInterfaces}
+                                onChange={(e) =>
+                                    setSeparateInterfaces(e.target.checked)
+                                }
+                                className='w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600'
+                            />
+                            <Label
+                                htmlFor='separate-interfaces'
+                                className='text-sm'
+                            >
+                                Tách các interface riêng biệt (nếu có)
                             </Label>
                         </div>
 
