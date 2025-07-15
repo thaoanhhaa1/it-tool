@@ -1,6 +1,6 @@
 # 🛠️ It Tools - Bộ công cụ tiện ích dành cho Developers
 
-Một ứng dụng web hiện đại được xây dựng với Next.js để hỗ trợ lập trình viên trong việc chuyển đổi và xử lý dữ liệu. Hiện tại hỗ trợ chuyển đổi JSON sang TypeScript interface và TypeScript interface sang Zod schema, và sẽ được mở rộng với nhiều tính năng hữu ích khác.
+Một ứng dụng web hiện đại được xây dựng với Next.js để hỗ trợ lập trình viên trong việc chuyển đổi và xử lý dữ liệu. Hiện tại hỗ trợ chuyển đổi JSON sang TypeScript interface, TypeScript interface sang Zod schema, và HTML sang JSX, và sẽ được mở rộng với nhiều tính năng hữu ích khác.
 
 ![Next.js](https://img.shields.io/badge/Next.js-15.4.1-black)
 ![React](https://img.shields.io/badge/React-19.1.0-blue)
@@ -28,6 +28,17 @@ Một ứng dụng web hiện đại được xây dựng với Next.js để h�
 -   **Type inference** tự động generate type từ schema
 -   **Export options** linh hoạt (export const, const)
 -   **Runtime validation** với Zod schema
+
+### 🎨 HTML to JSX Converter
+
+-   **Chuyển đổi HTML sang JSX** tự động và chính xác
+-   **Attribute conversion** (class → className, for → htmlFor, onclick → onClick)
+-   **Style object conversion** (style="color: red" → style={{color: 'red'}})
+-   **Self-closing tags** automatic formatting (`<img>` → `<img />`)
+-   **Event handlers** conversion (onclick → onClick, onchange → onChange)
+-   **SVG attributes** support (stroke-width → strokeWidth)
+-   **Comments conversion** (<!-- --> → {/\* \*/})
+-   **Example template** có sẵn để test nhanh
 
 ## 🚀 Roadmap phát triển
 
@@ -151,6 +162,37 @@ export const userSchema = z.object({
 type User = z.infer<typeof userSchema>;
 ```
 
+### HTML to JSX Converter
+
+1. Truy cập [http://localhost:3000/html-to-jsx](http://localhost:3000/html-to-jsx)
+2. Nhập HTML code vào ô input bên trái hoặc click "Tải ví dụ" để load sample
+3. Click "Chuyển đổi HTML sang JSX" để generate JSX code
+4. Copy kết quả từ ô output bên phải
+
+**Ví dụ Input/Output:**
+
+**Input HTML:**
+
+```html
+<div class="container">
+    <h1 style="color: blue; font-size: 24px;">Hello World</h1>
+    <button onclick="handleClick()">Click me</button>
+    <img src="image.jpg" alt="Example" />
+    <!-- This is a comment -->
+</div>
+```
+
+**Output JSX:**
+
+```jsx
+<div className='container'>
+    <h1 style={{ color: 'blue', fontSize: '24px' }}>Hello World</h1>
+    <button onClick='handleClick()'>Click me</button>
+    <img src='image.jpg' alt='Example' />
+    {/* This is a comment */}
+</div>
+```
+
 ### Build for production
 
 ```bash
@@ -164,6 +206,8 @@ npm run start
 convert-json/
 ├── src/
 │   ├── app/                 # Next.js App Router
+│   │   ├── html-to-jsx/     # HTML to JSX page
+│   │   │   └── page.tsx     # HTML to JSX converter
 │   │   ├── interface-to-zod/# Interface to Zod page
 │   │   │   └── page.tsx     # Interface to Zod converter
 │   │   ├── json-to-typescript/ # JSON to TypeScript page
@@ -174,6 +218,9 @@ convert-json/
 │   ├── components/          # React components
 │   │   ├── ui/              # shadcn/ui components
 │   │   ├── Navigation.tsx   # Navigation với logo và menu
+│   │   ├── NavigationClient.tsx # Client-side navigation
+│   │   ├── HtmlToJsxForm.tsx
+│   │   ├── HtmlToJsxConverter.tsx
 │   │   ├── JsonConverterForm.tsx
 │   │   ├── JsonToTypescriptConverter.tsx
 │   │   ├── InterfaceToZodForm.tsx
