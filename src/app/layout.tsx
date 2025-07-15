@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import { Roboto } from 'next/font/google';
+import Footer from '../components/Footer';
 import './globals.css';
 
 const roboto = Roboto({
@@ -140,7 +141,10 @@ export default function RootLayout({
                 />
             </head>
             <body className={`${roboto.className} antialiased`}>
-                {children}
+                <div className='flex flex-col min-h-screen'>
+                    <main className='flex-1'>{children}</main>
+                    <Footer />
+                </div>
             </body>
         </html>
     );
