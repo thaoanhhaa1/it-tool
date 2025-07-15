@@ -96,6 +96,9 @@ export default function RootLayout({
     return (
         <html lang='vi' suppressHydrationWarning>
             <head>
+                {/* Icon */}
+                <link rel='icon' href='/coding.ico' />
+
                 {/* Structured Data for SEO */}
                 <script
                     type='application/ld+json'

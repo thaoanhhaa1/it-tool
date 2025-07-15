@@ -63,7 +63,7 @@ function jsonToTypeScript(
             const allInterfaces: string[] = [];
 
             // Add nested interfaces first
-            for (const [name, definition] of collector.interfaces) {
+            for (const [, definition] of collector.interfaces) {
                 allInterfaces.push(definition);
             }
 
