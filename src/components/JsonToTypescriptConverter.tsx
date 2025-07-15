@@ -400,6 +400,7 @@ export default function JsonToTypescriptConverter() {
     const [useCamelCaseFields, setUseCamelCaseFields] = useState(false);
     const [useProperCamelCase, setUseProperCamelCase] = useState(false);
     const [separateInterfaces, setSeparateInterfaces] = useState(false);
+    const [copySuccess, setCopySuccess] = useState(false);
 
     const handleConvert = () => {
         try {
@@ -421,7 +422,11 @@ export default function JsonToTypescriptConverter() {
     const handleCopy = async () => {
         try {
             await navigator.clipboard.writeText(typescriptOutput);
-            // Có thể thêm toast notification ở đây
+            setCopySuccess(true);
+            // Tự động ẩn thông báo sau 2 giây
+            setTimeout(() => {
+                setCopySuccess(false);
+            }, 2000);
         } catch (err) {
             console.error('Không thể sao chép vào clipboard:', err);
         }
@@ -601,13 +606,20 @@ export default function JsonToTypescriptConverter() {
                         </div>
 
                         {typescriptOutput && (
-                            <Button
-                                onClick={handleCopy}
-                                variant='outline'
-                                className='w-full'
-                            >
-                                Sao chép vào Clipboard
-                            </Button>
+                            <div className='space-y-2'>
+                                <Button
+                                    onClick={handleCopy}
+                                    variant='outline'
+                                    className='w-full'
+                                >
+                                    Sao chép vào Clipboard
+                                </Button>
+                                {copySuccess && (
+                                    <div className='p-3 bg-green-100 border border-green-400 text-green-700 rounded-md text-center'>
+                                        ✓ Đã sao chép thành công vào clipboard!
+                                    </div>
+                                )}
+                            </div>
                         )}
                     </CardContent>
                 </Card>
