@@ -1,6 +1,6 @@
-# 🔄 Convert JSON - Công cụ chuyển đổi dành cho lập trình viên
+# 🛠️ It Tools - Bộ công cụ tiện ích dành cho Developers
 
-Một ứng dụng web hiện đại được xây dựng với Next.js để hỗ trợ lập trình viên trong việc chuyển đổi và xử lý dữ liệu JSON. Hiện tại hỗ trợ chuyển đổi JSON sang TypeScript interface, và sẽ được mở rộng với nhiều tính năng hữu ích khác.
+Một ứng dụng web hiện đại được xây dựng với Next.js để hỗ trợ lập trình viên trong việc chuyển đổi và xử lý dữ liệu. Hiện tại hỗ trợ chuyển đổi JSON sang TypeScript interface và TypeScript interface sang Zod schema, và sẽ được mở rộng với nhiều tính năng hữu ích khác.
 
 ![Next.js](https://img.shields.io/badge/Next.js-15.4.1-black)
 ![React](https://img.shields.io/badge/React-19.1.0-blue)
@@ -19,12 +19,23 @@ Một ứng dụng web hiện đại được xây dựng với Next.js để h�
 -   **Responsive design** hoạt động mượt mà trên mọi thiết bị
 -   **Real-time preview** hiển thị kết quả ngay lập tức
 
+### ✅ TypeScript Interface to Zod Schema Converter
+
+-   **Chuyển đổi TypeScript interface** sang Zod schema tự động
+-   **Hỗ trợ optional fields** (`name?: string`)
+-   **Hỗ trợ arrays và nested objects** với validation chính xác
+-   **Union types support** (`string | number`)
+-   **Type inference** tự động generate type từ schema
+-   **Export options** linh hoạt (export const, const)
+-   **Runtime validation** với Zod schema
+
 ## 🚀 Roadmap phát triển
 
-### Phase 2: JSON Schema & Validation
+### Phase 2: Zod & Validation Enhancement
 
+-   [ ] **Zod Schema Validator** - Validate JSON data với Zod schema
+-   [ ] **Enhanced Zod Support** - Custom validators, transforms, refinements
 -   [ ] **JSON Schema Generator** - Tạo JSON Schema từ JSON data
--   [ ] **JSON Schema Validator** - Validate JSON theo schema
 -   [ ] **Schema to TypeScript** - Convert JSON Schema sang TypeScript types
 
 ### Phase 3: Multi-language Support
@@ -60,6 +71,7 @@ Một ứng dụng web hiện đại được xây dựng với Next.js để h�
 -   **Framework**: Next.js 15 với App Router
 -   **Frontend**: React 19, TypeScript 5
 -   **Styling**: Tailwind CSS 4, Radix UI components
+-   **Validation**: Zod schema validation
 -   **Build Tool**: Turbopack cho dev performance
 -   **Code Quality**: ESLint, TypeScript strict mode
 
@@ -92,6 +104,53 @@ pnpm dev
 
 Mở [http://localhost:3000](http://localhost:3000) để xem ứng dụng.
 
+## 🎯 Hướng dẫn sử dụng
+
+### JSON to TypeScript Converter
+
+1. Truy cập [http://localhost:3000/json-to-typescript](http://localhost:3000/json-to-typescript)
+2. Nhập JSON data vào ô input bên trái
+3. Đặt tên interface và chọn các tùy chọn formatting
+4. Click "Chuyển đổi" để generate TypeScript interface
+5. Copy kết quả từ ô output bên phải
+
+### Interface to Zod Schema Converter
+
+1. Truy cập [http://localhost:3000/interface-to-zod](http://localhost:3000/interface-to-zod)
+2. Nhập TypeScript interface vào ô input
+3. Chọn export options (export const, const)
+4. Click "Chuyển đổi sang Zod" để generate schema
+5. Copy kết quả bao gồm cả import statement và type inference
+
+**Ví dụ Input/Output:**
+
+**Input Interface:**
+
+```typescript
+interface User {
+    id: number;
+    name: string;
+    email?: string;
+    tags: string[];
+}
+```
+
+**Output Zod Schema:**
+
+```typescript
+import { z } from 'zod';
+
+export const userSchema = z.object({
+    id: z.number(),
+    name: z.string(),
+    email: z.string().optional(),
+    tags: z.array(z.string()),
+});
+
+// Type inference từ schema
+type User = z.infer<typeof userSchema>;
+```
+
 ### Build for production
 
 ```bash
@@ -105,16 +164,25 @@ npm run start
 convert-json/
 ├── src/
 │   ├── app/                 # Next.js App Router
+│   │   ├── interface-to-zod/# Interface to Zod page
+│   │   │   └── page.tsx     # Interface to Zod converter
+│   │   ├── json-to-typescript/ # JSON to TypeScript page
+│   │   │   └── page.tsx     # JSON to TypeScript converter
 │   │   ├── layout.tsx       # Root layout
-│   │   ├── page.tsx         # Home page
+│   │   ├── page.tsx         # Home page với tools grid
 │   │   └── globals.css      # Global styles
 │   ├── components/          # React components
 │   │   ├── ui/              # shadcn/ui components
+│   │   ├── Navigation.tsx   # Navigation với logo và menu
 │   │   ├── JsonConverterForm.tsx
-│   │   └── JsonToTypescriptConverter.tsx
+│   │   ├── JsonToTypescriptConverter.tsx
+│   │   ├── InterfaceToZodForm.tsx
+│   │   └── InterfaceToZodConverter.tsx
 │   └── lib/                 # Utilities và helpers
 │       └── utils.ts
 ├── public/                  # Static assets
+│   ├── coding_192.png       # Logo file
+│   └── ...                  # Other assets
 ├── components.json          # shadcn/ui config
 ├── tailwind.config.js       # Tailwind CSS config
 └── tsconfig.json           # TypeScript config
@@ -159,5 +227,7 @@ Bạn muốn implement một feature trong roadmap? Tuyệt vời! Hãy:
 -   **Discussions**: [GitHub Discussions](../../discussions)
 
 ---
+
+**✨ It Tools - Nơi developers tìm thấy những công cụ hữu ích nhất**
 
 **Made with ❤️ by Vietnamese Developers for the Global Community**
