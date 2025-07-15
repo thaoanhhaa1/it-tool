@@ -12,32 +12,49 @@ import {
 } from './ui/card';
 import { Label } from './ui/label';
 
+// Type definitions for JSON values
+type JsonPrimitive = string | number | boolean | null;
+type JsonArray = JsonValue[];
+type JsonObject = { [key: string]: JsonValue };
+type JsonValue = JsonPrimitive | JsonArray | JsonObject;
+
+// Type guard functions
+function isJsonObject(value: JsonValue): value is JsonObject {
+    return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function isJsonArray(value: JsonValue): value is JsonArray {
+    return Array.isArray(value);
+}
+
 // Hàm chuyển đổi JSON sang TypeScript interface
 function jsonToTypeScript(
     jsonString: string,
     interfaceName: string = 'GeneratedInterface',
 ): string {
     try {
-        const obj = JSON.parse(jsonString);
-        return convertObjectToInterface(obj, interfaceName);
+        const obj: unknown = JSON.parse(jsonString);
+        return convertObjectToInterface(obj as JsonValue, interfaceName);
     } catch (error) {
-        throw new Error('JSON không hợp lệ');
+        throw new Error(
+            error instanceof Error ? error.message : 'JSON không hợp lệ',
+        );
     }
 }
 
 function convertObjectToInterface(
-    obj: any,
+    obj: JsonValue,
     interfaceName: string,
     depth: number = 0,
 ): string {
     const indent = '  '.repeat(depth);
 
-    if (Array.isArray(obj)) {
+    if (isJsonArray(obj)) {
         if (obj.length === 0) {
-            return 'any[]';
+            return 'unknown[]';
         }
         const firstElement = obj[0];
-        if (typeof firstElement === 'object' && firstElement !== null) {
+        if (isJsonObject(firstElement)) {
             const elementInterface = convertObjectToInterface(
                 firstElement,
                 `${interfaceName}Item`,
@@ -49,7 +66,7 @@ function convertObjectToInterface(
         }
     }
 
-    if (typeof obj !== 'object' || obj === null) {
+    if (!isJsonObject(obj)) {
         return getTypeFromValue(obj);
     }
 
@@ -70,7 +87,7 @@ function convertObjectToInterface(
 }
 
 function getTypeFromValue(
-    value: any,
+    value: JsonValue,
     typeName?: string,
     depth: number = 0,
 ): string {
@@ -78,10 +95,11 @@ function getTypeFromValue(
     if (typeof value === 'boolean') return 'boolean';
     if (typeof value === 'number') return 'number';
     if (typeof value === 'string') return 'string';
-    if (Array.isArray(value)) {
-        if (value.length === 0) return 'any[]';
+
+    if (isJsonArray(value)) {
+        if (value.length === 0) return 'unknown[]';
         const firstElement = value[0];
-        if (typeof firstElement === 'object' && firstElement !== null) {
+        if (isJsonObject(firstElement)) {
             const elementInterface = convertObjectToInterface(
                 firstElement,
                 `${typeName}Item`,
@@ -91,14 +109,17 @@ function getTypeFromValue(
         }
         return `${getTypeFromValue(firstElement)}[]`;
     }
-    if (typeof value === 'object') {
+
+    if (isJsonObject(value)) {
         return convertObjectToInterface(
             value,
             typeName || 'NestedInterface',
             depth,
         );
     }
-    return 'any';
+
+    // Fallback for unexpected values
+    return 'unknown';
 }
 
 function capitalizeFirstLetter(string: string): string {
