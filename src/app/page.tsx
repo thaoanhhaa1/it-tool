@@ -1,5 +1,48 @@
+import { Metadata } from 'next';
 import Link from 'next/link';
 import Navigation from '../components/Navigation';
+
+export const metadata: Metadata = {
+    title: 'It Tools - Bộ công cụ tiện ích miễn phí cho Developers',
+    description:
+        'Bộ công cụ toàn diện cho developers: JSON to TypeScript, Interface to Zod, HTML to JSX. Miễn phí, nhanh chóng, chính xác và không cần đăng ký.',
+    keywords: [
+        'it tools',
+        'developer tools',
+        'JSON to TypeScript converter',
+        'Interface to Zod converter',
+        'HTML to JSX converter',
+        'programming tools',
+        'code converter',
+        'web development tools',
+        'TypeScript tools',
+        'React tools',
+        'free online tools',
+    ],
+    openGraph: {
+        title: 'It Tools - Bộ công cụ tiện ích miễn phí cho Developers',
+        description:
+            'Bộ công cụ toàn diện cho developers: JSON to TypeScript, Interface to Zod, HTML to JSX. Miễn phí, nhanh chóng và chính xác.',
+        url: 'https://it-tool-two.vercel.app',
+        images: [
+            {
+                url: '/og-home.jpg',
+                width: 1200,
+                height: 630,
+                alt: 'It Tools - Developer Tools Homepage',
+            },
+        ],
+    },
+    twitter: {
+        card: 'summary_large_image',
+        title: 'It Tools - Bộ công cụ tiện ích miễn phí cho Developers',
+        description:
+            'JSON to TypeScript, Interface to Zod, HTML to JSX và nhiều công cụ khác. Miễn phí và không cần đăng ký.',
+    },
+    alternates: {
+        canonical: 'https://it-tool-two.vercel.app',
+    },
+};
 
 export default function Home() {
     const tools = [

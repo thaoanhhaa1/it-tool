@@ -20,43 +20,51 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-    title: 'JSON to TypeScript Converter - Chuyển đổi JSON sang Interface miễn phí',
+    title: {
+        default: 'It Tools - Bộ công cụ miễn phí dành cho Developers',
+        template: '%s | It Tools - Developer Tools',
+    },
     description:
-        'Công cụ miễn phí chuyển đổi JSON sang TypeScript interface. Hỗ trợ camelCase, nested objects, arrays và nhiều tùy chọn khác. Nhanh chóng, chính xác và dễ sử dụng.',
+        'Bộ công cụ tiện ích miễn phí dành cho developers. Chuyển đổi JSON sang TypeScript interface, TypeScript interface sang Zod schema, HTML sang JSX và nhiều công cụ khác.',
     keywords: [
-        'JSON to TypeScript',
-        'JSON converter',
-        'TypeScript interface',
-        'JSON parser',
-        'TypeScript generator',
-        'free online tool',
         'developer tools',
+        'JSON to TypeScript',
+        'Interface to Zod',
+        'HTML to JSX',
         'code converter',
+        'TypeScript interface',
+        'Zod schema',
+        'JSON parser',
+        'free online tool',
+        'programming tools',
+        'web development',
+        'React tools',
+        'TypeScript tools',
     ],
-    authors: [{ name: 'JSON to TypeScript Converter' }],
-    creator: 'JSON to TypeScript Converter',
-    publisher: 'JSON to TypeScript Converter',
+    authors: [{ name: 'It Tools' }],
+    creator: 'It Tools',
+    publisher: 'It Tools',
     formatDetection: {
         email: false,
         address: false,
         telephone: false,
     },
-    metadataBase: new URL('https://it-tool-two.vercel.app'), // Thay đổi URL này theo domain thực tế
+    metadataBase: new URL('https://it-tool-two.vercel.app'),
     alternates: {
         canonical: '/',
     },
     openGraph: {
-        title: 'JSON to TypeScript Converter - Chuyển đổi JSON sang Interface miễn phí',
+        title: 'It Tools - Bộ công cụ miễn phí dành cho Developers',
         description:
-            'Công cụ miễn phí chuyển đổi JSON sang TypeScript interface. Hỗ trợ camelCase, nested objects, arrays và nhiều tùy chọn khác.',
-        url: 'https://it-tool-two.vercel.app', // Thay đổi URL này theo domain thực tế
-        siteName: 'JSON to TypeScript Converter',
+            'Bộ công cụ tiện ích miễn phí dành cho developers. Chuyển đổi JSON sang TypeScript, Interface sang Zod, HTML sang JSX và nhiều công cụ khác.',
+        url: 'https://it-tool-two.vercel.app',
+        siteName: 'It Tools',
         images: [
             {
-                url: '/og-image.jpg', // Bạn sẽ cần tạo ảnh này
+                url: '/og-image.jpg',
                 width: 1200,
                 height: 630,
-                alt: 'JSON to TypeScript Converter Tool',
+                alt: 'It Tools - Developer Tools',
             },
         ],
         locale: 'vi_VN',
@@ -64,11 +72,11 @@ export const metadata: Metadata = {
     },
     twitter: {
         card: 'summary_large_image',
-        title: 'JSON to TypeScript Converter - Chuyển đổi JSON sang Interface miễn phí',
+        title: 'It Tools - Bộ công cụ miễn phí dành cho Developers',
         description:
-            'Công cụ miễn phí chuyển đổi JSON sang TypeScript interface. Hỗ trợ camelCase, nested objects, arrays.',
-        images: ['/og-image.jpg'], // Bạn sẽ cần tạo ảnh này
-        creator: '@your-twitter-handle', // Thay đổi theo Twitter handle thực tế
+            'Bộ công cụ tiện ích miễn phí: JSON to TypeScript, Interface to Zod, HTML to JSX và nhiều công cụ khác.',
+        images: ['/og-image.jpg'],
+        creator: '@ittools_dev',
     },
     robots: {
         index: true,
@@ -82,9 +90,7 @@ export const metadata: Metadata = {
         },
     },
     verification: {
-        google: 'your-google-verification-code', // Thêm Google Search Console verification code
-        // yandex: 'your-yandex-verification-code',
-        // bing: 'your-bing-verification-code',
+        google: 'your-google-verification-code',
     },
     category: 'technology',
 };
@@ -104,9 +110,9 @@ export default function RootLayout({
                         __html: JSON.stringify({
                             '@context': 'https://schema.org',
                             '@type': 'WebApplication',
-                            name: 'JSON to TypeScript Converter',
+                            name: 'It Tools',
                             description:
-                                'Công cụ miễn phí chuyển đổi JSON sang TypeScript interface. Hỗ trợ camelCase, nested objects, arrays và nhiều tùy chọn khác.',
+                                'Bộ công cụ tiện ích miễn phí dành cho developers. Chuyển đổi JSON sang TypeScript interface, TypeScript interface sang Zod schema, HTML sang JSX và nhiều công cụ khác.',
                             url: 'https://it-tool-two.vercel.app',
                             applicationCategory: 'DeveloperApplication',
                             operatingSystem: 'Any',
@@ -119,15 +125,42 @@ export default function RootLayout({
                             },
                             author: {
                                 '@type': 'Organization',
-                                name: 'JSON to TypeScript Converter',
+                                name: 'It Tools',
                             },
                             featureList: [
                                 'Chuyển đổi JSON sang TypeScript interface',
+                                'Chuyển đổi TypeScript interface sang Zod schema',
+                                'Chuyển đổi HTML sang JSX component',
                                 'Hỗ trợ camelCase formatting',
                                 'Xử lý nested objects và arrays',
                                 'Copy kết quả vào clipboard',
                                 'Dark mode support',
                                 'Miễn phí và không cần đăng ký',
+                                'Open source',
+                                'Responsive design',
+                            ],
+                            hasAction: [
+                                {
+                                    '@type': 'ConvertAction',
+                                    name: 'JSON to TypeScript',
+                                    description:
+                                        'Chuyển đổi JSON thành TypeScript interface',
+                                    target: 'https://it-tool-two.vercel.app/json-to-typescript',
+                                },
+                                {
+                                    '@type': 'ConvertAction',
+                                    name: 'Interface to Zod',
+                                    description:
+                                        'Chuyển đổi TypeScript interface thành Zod schema',
+                                    target: 'https://it-tool-two.vercel.app/interface-to-zod',
+                                },
+                                {
+                                    '@type': 'ConvertAction',
+                                    name: 'HTML to JSX',
+                                    description:
+                                        'Chuyển đổi HTML thành JSX component',
+                                    target: 'https://it-tool-two.vercel.app/html-to-jsx',
+                                },
                             ],
                         }),
                     }}
