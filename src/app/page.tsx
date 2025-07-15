@@ -29,6 +29,19 @@ export default function Home() {
                 'Error handling',
             ],
         },
+        {
+            href: '/html-to-jsx',
+            title: 'HTML to JSX',
+            description:
+                'Chuyển đổi HTML thành JSX component cho React một cách tự động',
+            icon: '⚛️',
+            features: [
+                'Attribute conversion',
+                'Style objects',
+                'Self-closing tags',
+                'Comment handling',
+            ],
+        },
     ];
 
     return (
@@ -43,8 +56,9 @@ export default function Home() {
                     </h1>
                     <p className='text-xl text-gray-600 dark:text-gray-400 mb-8 max-w-3xl mx-auto'>
                         Bộ công cụ tiện ích dành cho developers. Chuyển đổi JSON
-                        sang TypeScript interface và TypeScript interface sang
-                        Zod schema một cách nhanh chóng, miễn phí và dễ sử dụng.
+                        sang TypeScript interface, TypeScript interface sang Zod
+                        schema, và HTML sang JSX component một cách nhanh chóng,
+                        miễn phí và dễ sử dụng.
                     </p>
                     <div className='flex flex-wrap justify-center gap-4'>
                         <span className='px-4 py-2 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded-full text-sm font-medium'>
@@ -191,8 +205,8 @@ export default function Home() {
                         Bắt đầu ngay hôm nay
                     </h2>
                     <p className='text-xl mb-8 opacity-90'>
-                        Chuyển đổi JSON của bạn thành TypeScript interface chỉ
-                        trong vài click
+                        Chuyển đổi code của bạn một cách nhanh chóng và chính
+                        xác chỉ trong vài click
                     </p>
                     <div className='flex flex-wrap justify-center gap-4'>
                         <Link
@@ -219,6 +233,25 @@ export default function Home() {
                             className='inline-flex items-center px-8 py-3 border-2 border-white text-white rounded-lg font-semibold hover:bg-white hover:text-blue-600 transition-colors'
                         >
                             Interface to Zod
+                            <svg
+                                className='w-5 h-5 ml-2'
+                                fill='none'
+                                stroke='currentColor'
+                                viewBox='0 0 24 24'
+                            >
+                                <path
+                                    strokeLinecap='round'
+                                    strokeLinejoin='round'
+                                    strokeWidth={2}
+                                    d='M9 5l7 7-7 7'
+                                />
+                            </svg>
+                        </Link>
+                        <Link
+                            href='/html-to-jsx'
+                            className='inline-flex items-center px-8 py-3 border-2 border-white text-white rounded-lg font-semibold hover:bg-white hover:text-blue-600 transition-colors'
+                        >
+                            HTML to JSX
                             <svg
                                 className='w-5 h-5 ml-2'
                                 fill='none'
