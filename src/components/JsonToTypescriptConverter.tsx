@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { Button } from './ui/button';
-import { Textarea } from './ui/textarea';
 import {
     Card,
     CardContent,
@@ -11,6 +10,7 @@ import {
     CardTitle,
 } from './ui/card';
 import { Label } from './ui/label';
+import { Textarea } from './ui/textarea';
 
 // Type definitions for JSON values
 type JsonPrimitive = string | number | boolean | null;
@@ -31,10 +31,16 @@ function isJsonArray(value: JsonValue): value is JsonArray {
 function jsonToTypeScript(
     jsonString: string,
     interfaceName: string = 'GeneratedInterface',
+    useCamelCaseFields: boolean = false,
 ): string {
     try {
         const obj: unknown = JSON.parse(jsonString);
-        return convertObjectToInterface(obj as JsonValue, interfaceName);
+        return convertObjectToInterface(
+            obj as JsonValue,
+            interfaceName,
+            0,
+            useCamelCaseFields,
+        );
     } catch (error) {
         throw new Error(
             error instanceof Error ? error.message : 'JSON không hợp lệ',
@@ -46,6 +52,7 @@ function convertObjectToInterface(
     obj: JsonValue,
     interfaceName: string,
     depth: number = 0,
+    useCamelCaseFields: boolean = false,
 ): string {
     const indent = '  '.repeat(depth);
 
@@ -59,26 +66,35 @@ function convertObjectToInterface(
                 firstElement,
                 `${interfaceName}Item`,
                 depth,
+                useCamelCaseFields,
             );
             return `${elementInterface}[]`;
         } else {
-            return `${getTypeFromValue(firstElement)}[]`;
+            return `${getTypeFromValue(
+                firstElement,
+                undefined,
+                0,
+                useCamelCaseFields,
+            )}[]`;
         }
     }
 
     if (!isJsonObject(obj)) {
-        return getTypeFromValue(obj);
+        return getTypeFromValue(obj, undefined, 0, useCamelCaseFields);
     }
 
     let interfaceString = `interface ${interfaceName} {\n`;
 
     for (const [key, value] of Object.entries(obj)) {
+        // Convert field name to camelCase if option is enabled
+        const fieldName = useCamelCaseFields ? toCamelCase(key) : key;
         const type = getTypeFromValue(
             value,
             `${capitalizeFirstLetter(key)}`,
             depth + 1,
+            useCamelCaseFields,
         );
-        interfaceString += `${indent}  ${key}: ${type};\n`;
+        interfaceString += `${indent}  ${fieldName}: ${type};\n`;
     }
 
     interfaceString += `${indent}}`;
@@ -90,6 +106,7 @@ function getTypeFromValue(
     value: JsonValue,
     typeName?: string,
     depth: number = 0,
+    useCamelCaseFields: boolean = false,
 ): string {
     if (value === null) return 'null';
     if (typeof value === 'boolean') return 'boolean';
@@ -104,10 +121,16 @@ function getTypeFromValue(
                 firstElement,
                 `${typeName}Item`,
                 depth,
+                useCamelCaseFields,
             );
             return `${elementInterface}[]`;
         }
-        return `${getTypeFromValue(firstElement)}[]`;
+        return `${getTypeFromValue(
+            firstElement,
+            undefined,
+            0,
+            useCamelCaseFields,
+        )}[]`;
     }
 
     if (isJsonObject(value)) {
@@ -115,6 +138,7 @@ function getTypeFromValue(
             value,
             typeName || 'NestedInterface',
             depth,
+            useCamelCaseFields,
         );
     }
 
@@ -126,16 +150,26 @@ function capitalizeFirstLetter(string: string): string {
     return string.charAt(0).toUpperCase() + string.slice(1);
 }
 
+function toCamelCase(string: string): string {
+    // Chỉ chuyển ký tự đầu tiên thành chữ thường
+    return string.charAt(0).toLowerCase() + string.slice(1);
+}
+
 export default function JsonToTypescriptConverter() {
     const [jsonInput, setJsonInput] = useState('');
     const [interfaceName, setInterfaceName] = useState('MyInterface');
     const [typescriptOutput, setTypescriptOutput] = useState('');
     const [error, setError] = useState('');
+    const [useCamelCaseFields, setUseCamelCaseFields] = useState(false);
 
     const handleConvert = () => {
         try {
             setError('');
-            const result = jsonToTypeScript(jsonInput, interfaceName);
+            const result = jsonToTypeScript(
+                jsonInput,
+                interfaceName,
+                useCamelCaseFields,
+            );
             setTypescriptOutput(result);
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Đã xảy ra lỗi');
@@ -153,23 +187,23 @@ export default function JsonToTypescriptConverter() {
     };
 
     const sampleJson = `{
-  "name": "John Doe",
-  "age": 30,
-  "isActive": true,
-  "address": {
-    "street": "123 Main St",
-    "city": "New York",
-    "zipCode": "10001"
+  "Name": "John Doe",
+  "Age": 30,
+  "IsActive": true,
+  "Address": {
+    "Street": "123 Main St",
+    "City": "New York",
+    "ZipCode": "10001"
   },
-  "hobbies": ["reading", "swimming", "coding"],
-  "contacts": [
+  "Hobbies": ["reading", "swimming", "coding"],
+  "ContactInfo": [
     {
-      "type": "email",
-      "value": "john@example.com"
+      "Type": "email",
+      "Value": "john@example.com"
     },
     {
-      "type": "phone",
-      "value": "+1234567890"
+      "Type": "phone",
+      "Value": "+1234567890"
     }
   ]
 }`;
@@ -214,6 +248,21 @@ export default function JsonToTypescriptConverter() {
                                 className='w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800'
                                 placeholder='MyInterface'
                             />
+                        </div>
+
+                        <div className='flex items-center space-x-2'>
+                            <input
+                                id='camel-case'
+                                type='checkbox'
+                                checked={useCamelCaseFields}
+                                onChange={(e) =>
+                                    setUseCamelCaseFields(e.target.checked)
+                                }
+                                className='w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600'
+                            />
+                            <Label htmlFor='camel-case' className='text-sm'>
+                                Chuyển ký tự đầu của field thành chữ thường
+                            </Label>
                         </div>
 
                         <div className='space-y-2'>
