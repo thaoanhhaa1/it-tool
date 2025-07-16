@@ -1,0 +1,25 @@
+User-agent: *
+Allow: /
+
+# Component Library pages
+Allow: /component-library
+Allow: /component-library/*
+
+# Conversion tools
+Allow: /json-to-typescript
+Allow: /interface-to-zod
+Allow: /html-to-jsx
+
+# Static assets
+Allow: /public/*
+Allow: /_next/static/*
+
+# Disallow admin or private paths (if any)
+# Disallow: /admin
+# Disallow: /api/private
+
+# Sitemap
+Sitemap: https://it-tool-two.vercel.app/sitemap.xml
+
+# Crawl delay (optional)
+Crawl-delay: 1 

@@ -7,22 +7,22 @@ const navItems = [
     {
         href: '/',
         label: 'Trang chủ',
-        description: 'Về trang chủ It Tools',
     },
     {
         href: '/json-to-typescript',
         label: 'JSON to TypeScript',
-        description: 'Chuyển đổi JSON sang TypeScript interface',
     },
     {
         href: '/interface-to-zod',
         label: 'Interface to Zod',
-        description: 'Chuyển đổi TypeScript interface sang Zod schema',
     },
     {
         href: '/html-to-jsx',
         label: 'HTML to JSX',
-        description: 'Chuyển đổi HTML sang JSX component',
+    },
+    {
+        href: '/code-library',
+        label: 'Code Library',
     },
 ];
 

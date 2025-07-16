@@ -6,7 +6,6 @@ import { usePathname } from 'next/navigation';
 interface NavItem {
     href: string;
     label: string;
-    description: string;
 }
 
 interface NavigationClientProps {
@@ -33,9 +32,6 @@ export function NavigationClient({ navItems }: NavigationClientProps) {
                     >
                         <div className='text-center'>
                             <div className='font-medium'>{item.label}</div>
-                            <div className='text-xs text-gray-500 dark:text-gray-400 mt-1'>
-                                {item.description}
-                            </div>
                         </div>
                     </Link>
                 );
