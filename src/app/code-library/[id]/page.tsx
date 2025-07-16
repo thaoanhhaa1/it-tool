@@ -1,238 +1,21 @@
 import ComponentCode from '@/components/ComponentCode';
 import CopyButton from '@/components/CopyButton';
 import Navigation from '@/components/Navigation';
+import { codeExampleService, type CodeExample } from '@/services/apiService';
 import { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
-// Mock data - trong thực tế sẽ fetch từ database/API
-interface CodeExample {
-    id: string;
-    name: string;
-    description: string;
-    type: 'component' | 'function';
-    library:
-        | 'MUI'
-        | 'Ant Design'
-        | 'Chakra UI'
-        | 'Custom'
-        | 'Headless UI'
-        | 'JavaScript'
-        | 'TypeScript'
-        | 'React'
-        | 'Utility';
-    tags: string[];
-    code: string;
-}
-
-const codeExamples: CodeExample[] = [
-    {
-        id: 'mui-button',
-        name: 'MUI Button Variants',
-        description:
-            'Các biến thể button của Material-UI với styling tùy chỉnh',
-        type: 'component',
-        library: 'MUI',
-        tags: ['button', 'mui', 'material-ui', 'variants'],
-        code: `import { Button, Stack } from '@mui/material';
-import { styled } from '@mui/material/styles';
-
-const CustomButton = styled(Button)(({ theme }) => ({
-  borderRadius: 12,
-  textTransform: 'none',
-  fontWeight: 600,
-  '&.gradient': {
-    background: 'linear-gradient(45deg, #FE6B8B 30%, #FF8E53 90%)',
-    border: 0,
-    color: 'white',
-    '&:hover': {
-      background: 'linear-gradient(45deg, #FE6B8B 60%, #FF8E53 100%)',
-    },
-  },
-}));
-
-export default function MUIButtonVariants() {
-  return (
-    <Stack spacing={2} direction="row" flexWrap="wrap">
-      <CustomButton variant="contained">
-        Standard Button
-      </CustomButton>
-      <CustomButton variant="outlined">
-        Outlined Button
-      </CustomButton>
-      <CustomButton className="gradient">
-        Gradient Button
-      </CustomButton>
-    </Stack>
-  );
-}`,
-    },
-    {
-        id: 'ant-form',
-        name: 'Ant Design Form',
-        description: 'Form validation và xử lý dữ liệu với Ant Design',
-        type: 'component',
-        library: 'Ant Design',
-        tags: ['form', 'antd', 'validation', 'input'],
-        code: `import { Form, Input, Button, message } from 'antd';
-import { UserOutlined, LockOutlined } from '@ant-design/icons';
-
-interface LoginFormValues {
-  username: string;
-  password: string;
-}
-
-export default function LoginForm() {
-  const [form] = Form.useForm();
-
-  const onFinish = (values: LoginFormValues) => {
-    console.log('Received values:', values);
-    message.success('Đăng nhập thành công!');
-  };
-
-  return (
-    <Form
-      form={form}
-      name="login"
-      onFinish={onFinish}
-      style={{ maxWidth: 300 }}
-    >
-      <Form.Item
-        name="username"
-        rules={[
-          { required: true, message: 'Vui lòng nhập tên đăng nhập!' }
-        ]}
-      >
-        <Input 
-          prefix={<UserOutlined />} 
-          placeholder="Tên đăng nhập" 
-        />
-      </Form.Item>
-      <Form.Item
-        name="password"
-        rules={[
-          { required: true, message: 'Vui lòng nhập mật khẩu!' }
-        ]}
-      >
-        <Input.Password 
-          prefix={<LockOutlined />} 
-          placeholder="Mật khẩu" 
-        />
-      </Form.Item>
-      <Form.Item>
-        <Button type="primary" htmlType="submit" block>
-          Đăng nhập
-        </Button>
-      </Form.Item>
-    </Form>
-  );
-}`,
-    },
-    {
-        id: 'debounce-hook',
-        name: 'useDebounce Hook',
-        description: 'Custom hook để debounce giá trị, hữu ích cho search',
-        type: 'function',
-        library: 'React',
-        tags: ['hook', 'debounce', 'performance', 'search'],
-        code: `import { useState, useEffect } from 'react';
-
-/**
- * Custom hook để debounce một giá trị
- * @param value - Giá trị cần debounce
- * @param delay - Thời gian delay (ms)
- * @returns Giá trị đã được debounce
- */
-export function useDebounce<T>(value: T, delay: number): T {
-  const [debouncedValue, setDebouncedValue] = useState<T>(value);
-
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedValue(value);
-    }, delay);
-
-    return () => {
-      clearTimeout(handler);
-    };
-  }, [value, delay]);
-
-  return debouncedValue;
-}
-
-// Cách sử dụng:
-export function SearchComponent() {
-  const [searchTerm, setSearchTerm] = useState('');
-  const debouncedSearchTerm = useDebounce(searchTerm, 300);
-
-  useEffect(() => {
-    if (debouncedSearchTerm) {
-      // Thực hiện API call ở đây
-      console.log('Searching for:', debouncedSearchTerm);
+// Async function để fetch code example từ API
+async function getCodeExample(id: string): Promise<CodeExample | null> {
+    try {
+        const codeExample = await codeExampleService.getById(id);
+        return codeExample;
+    } catch (error) {
+        console.error('Error fetching code example:', error);
+        return null;
     }
-  }, [debouncedSearchTerm]);
-
-  return (
-    <input
-      type="text"
-      value={searchTerm}
-      onChange={(e) => setSearchTerm(e.target.value)}
-      placeholder="Tìm kiếm..."
-    />
-  );
-}`,
-    },
-    {
-        id: 'format-currency',
-        name: 'formatCurrency',
-        description: 'Function format tiền tệ Việt Nam với đầy đủ options',
-        type: 'function',
-        library: 'Utility',
-        tags: ['currency', 'format', 'vietnam', 'utility', 'intl'],
-        code: `/**
- * Format số thành định dạng tiền tệ Việt Nam
- * @param amount - Số tiền cần format
- * @param options - Tùy chọn format
- */
-interface FormatCurrencyOptions {
-  currency?: 'VND' | 'USD' | 'EUR';
-  locale?: string;
-  minimumFractionDigits?: number;
-  maximumFractionDigits?: number;
-  showSymbol?: boolean;
 }
-
-export function formatCurrency(
-  amount: number,
-  options: FormatCurrencyOptions = {}
-): string {
-  const {
-    currency = 'VND',
-    locale = 'vi-VN',
-    minimumFractionDigits = 0,
-    maximumFractionDigits = 0,
-    showSymbol = true
-  } = options;
-
-  const formatter = new Intl.NumberFormat(locale, {
-    style: showSymbol ? 'currency' : 'decimal',
-    currency,
-    minimumFractionDigits,
-    maximumFractionDigits,
-  });
-
-  return formatter.format(amount);
-}
-
-// Cách sử dụng:
-console.log(formatCurrency(1000000)); // "1.000.000 ₫"
-console.log(formatCurrency(1234.56, { 
-  currency: 'USD', 
-  locale: 'en-US',
-  maximumFractionDigits: 2 
-})); // "$1,234.56"
-console.log(formatCurrency(500000, { showSymbol: false })); // "500.000"`,
-    },
-];
 
 // Generate metadata cho từng component detail page
 export async function generateMetadata({
@@ -241,7 +24,7 @@ export async function generateMetadata({
     params: { id: string };
 }): Promise<Metadata> {
     const { id } = params;
-    const example = codeExamples.find((ex) => ex.id === id);
+    const example = await getCodeExample(id);
 
     if (!example) {
         return {
@@ -275,21 +58,33 @@ export async function generateMetadata({
             locale: 'vi_VN',
         },
         alternates: {
-            canonical: `/code-library/${example.id}`,
+            canonical: `/code-library/${example._id}`,
         },
     };
 }
 
 // Generate static params cho tất cả components có sẵn
 export async function generateStaticParams() {
-    return codeExamples.map((example) => ({
-        id: example.id,
-    }));
+    try {
+        const { codeExamples } = await codeExampleService.getAll({
+            limit: 100,
+        });
+        return codeExamples.map((example) => ({
+            id: example._id,
+        }));
+    } catch (error) {
+        console.error('Error in generateStaticParams:', error);
+        return [];
+    }
 }
 
-export default function CodeDetailPage({ params }: { params: { id: string } }) {
+export default async function CodeDetailPage({
+    params,
+}: {
+    params: { id: string };
+}) {
     const { id } = params;
-    const example = codeExamples.find((ex) => ex.id === id);
+    const example = await getCodeExample(id);
 
     if (!example) {
         notFound();
@@ -300,7 +95,7 @@ export default function CodeDetailPage({ params }: { params: { id: string } }) {
         function: 'bg-emerald-100 text-emerald-800',
     };
 
-    const libraryColors = {
+    const libraryColors: Record<string, string> = {
         MUI: 'bg-blue-100 text-blue-800',
         'Ant Design': 'bg-orange-100 text-orange-800',
         'Chakra UI': 'bg-teal-100 text-teal-800',
@@ -315,6 +110,11 @@ export default function CodeDetailPage({ params }: { params: { id: string } }) {
     const typeIcons = {
         component: '⚛️',
         function: '🔧',
+    };
+
+    // Format date
+    const formatDate = (dateString: string) => {
+        return new Date(dateString).toLocaleDateString('vi-VN');
     };
 
     return (
@@ -366,11 +166,37 @@ export default function CodeDetailPage({ params }: { params: { id: string } }) {
                                     </span>
                                     <span
                                         className={`px-3 py-1 rounded-full text-sm font-medium ${
-                                            libraryColors[example.library]
+                                            libraryColors[example.library] ||
+                                            'bg-gray-100 text-gray-800'
                                         }`}
                                     >
                                         {example.library}
                                     </span>
+                                </div>
+                            </div>
+
+                            {/* Author và Stats */}
+                            <div className='flex items-center justify-between pt-4 border-t border-gray-100'>
+                                <div className='flex items-center gap-3'>
+                                    <div className='w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center'>
+                                        <span className='text-blue-600 font-medium text-sm'>
+                                            {example.author.username
+                                                .charAt(0)
+                                                .toUpperCase()}
+                                        </span>
+                                    </div>
+                                    <div>
+                                        <p className='text-sm font-medium text-gray-900'>
+                                            {example.author.fullName}
+                                        </p>
+                                        <p className='text-xs text-gray-500'>
+                                            @{example.author.username}
+                                        </p>
+                                    </div>
+                                </div>
+                                <div className='flex items-center gap-4 text-sm text-gray-500'>
+                                    <span>👀 {example.views} views</span>
+                                    <span>❤️ {example.likes} likes</span>
                                 </div>
                             </div>
                         </div>
@@ -423,6 +249,22 @@ export default function CodeDetailPage({ params }: { params: { id: string } }) {
                                 </div>
                                 <div>
                                     <dt className='text-sm font-medium text-gray-500'>
+                                        Độ khó
+                                    </dt>
+                                    <dd className='text-sm text-gray-900 capitalize'>
+                                        {example.difficulty}
+                                    </dd>
+                                </div>
+                                <div>
+                                    <dt className='text-sm font-medium text-gray-500'>
+                                        Ngày tạo
+                                    </dt>
+                                    <dd className='text-sm text-gray-900'>
+                                        {formatDate(example.createdAt)}
+                                    </dd>
+                                </div>
+                                <div>
+                                    <dt className='text-sm font-medium text-gray-500'>
                                         Tags
                                     </dt>
                                     <dd className='flex flex-wrap gap-1 mt-1'>
@@ -438,6 +280,31 @@ export default function CodeDetailPage({ params }: { params: { id: string } }) {
                                 </div>
                             </dl>
                         </div>
+
+                        {/* Dependencies */}
+                        {example.dependencies &&
+                            example.dependencies.length > 0 && (
+                                <div className='bg-white rounded-lg border border-gray-200 p-6'>
+                                    <h3 className='text-lg font-semibold text-gray-900 mb-4'>
+                                        Dependencies
+                                    </h3>
+                                    <div className='space-y-2'>
+                                        {example.dependencies.map(
+                                            (dependency) => (
+                                                <div
+                                                    key={dependency}
+                                                    className='flex items-center gap-2 text-sm'
+                                                >
+                                                    <span className='w-2 h-2 bg-green-500 rounded-full'></span>
+                                                    <code className='bg-gray-100 px-2 py-1 rounded text-xs'>
+                                                        {dependency}
+                                                    </code>
+                                                </div>
+                                            ),
+                                        )}
+                                    </div>
+                                </div>
+                            )}
 
                         {/* Installation */}
                         <div className='bg-white rounded-lg border border-gray-200 p-6'>

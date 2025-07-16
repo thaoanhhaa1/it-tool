@@ -8,9 +8,27 @@ interface ApiResponse<T = unknown> {
     error?: string;
 }
 
+// Get base URL for API calls
+const getBaseURL = () => {
+    // If environment variable is set, use it
+    if (process.env.NEXT_PUBLIC_API_URL) {
+        return process.env.NEXT_PUBLIC_API_URL;
+    }
+
+    // In browser, use current origin
+    if (typeof window !== 'undefined') {
+        return window.location.origin;
+    }
+
+    // In server-side, try to get from headers or use localhost
+    return process.env.VERCEL_URL
+        ? `https://${process.env.VERCEL_URL}`
+        : 'http://localhost:3000';
+};
+
 // Axios configuration
 const axiosConfig = {
-    baseURL: process.env.NEXT_PUBLIC_API_URL || '',
+    baseURL: getBaseURL(),
     timeout: 10000,
     headers: {
         'Content-Type': 'application/json',
