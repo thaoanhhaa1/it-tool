@@ -439,9 +439,10 @@ export async function generateStaticParams() {
 export async function generateMetadata({
     params,
 }: {
-    params: { id: string };
+    params: Promise<{ id: string }>;
 }): Promise<Metadata> {
-    const component = componentData[params.id as keyof typeof componentData];
+    const { id } = await params;
+    const component = componentData[id as keyof typeof componentData];
 
     if (!component) {
         return {
@@ -485,12 +486,13 @@ export async function generateMetadata({
     };
 }
 
-export default function ComponentDetailPage({
+export default async function ComponentDetailPage({
     params,
 }: {
-    params: { id: string };
+    params: Promise<{ id: string }>;
 }) {
-    const component = componentData[params.id as keyof typeof componentData];
+    const { id } = await params;
+    const component = componentData[id as keyof typeof componentData];
 
     if (!component) {
         notFound();
@@ -673,26 +675,12 @@ export default function ComponentDetailPage({
                                 ⚡ Hành động
                             </h3>
                             <div className='space-y-3'>
-                                <button
-                                    onClick={() =>
-                                        navigator.clipboard.writeText(
-                                            component.code,
-                                        )
-                                    }
-                                    className='w-full flex items-center justify-center gap-2 px-4 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors'
-                                >
+                                <div className='w-full flex items-center justify-center gap-2 px-4 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors cursor-pointer'>
                                     📋 Copy Code
-                                </button>
-                                <button
-                                    onClick={() =>
-                                        navigator.clipboard.writeText(
-                                            window.location.href,
-                                        )
-                                    }
-                                    className='w-full flex items-center justify-center gap-2 px-4 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors'
-                                >
+                                </div>
+                                <div className='w-full flex items-center justify-center gap-2 px-4 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer'>
                                     🔗 Share Link
-                                </button>
+                                </div>
                                 <Link
                                     href='/component-library'
                                     className='w-full flex items-center justify-center gap-2 px-4 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors'

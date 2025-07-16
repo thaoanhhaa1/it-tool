@@ -21,9 +21,9 @@ async function getCodeExample(id: string): Promise<CodeExample | null> {
 export async function generateMetadata({
     params,
 }: {
-    params: { id: string };
+    params: Promise<{ id: string }>;
 }): Promise<Metadata> {
-    const { id } = params;
+    const { id } = await params;
     const example = await getCodeExample(id);
 
     if (!example) {
@@ -65,25 +65,17 @@ export async function generateMetadata({
 
 // Generate static params cho tất cả components có sẵn
 export async function generateStaticParams() {
-    try {
-        const { codeExamples } = await codeExampleService.getAll({
-            limit: 100,
-        });
-        return codeExamples.map((example) => ({
-            id: example._id,
-        }));
-    } catch (error) {
-        console.error('Error in generateStaticParams:', error);
-        return [];
-    }
+    // Trả về mảng rỗng để tránh lỗi khi build mà API chưa sẵn sàng
+    // Các trang sẽ được tạo on-demand
+    return [];
 }
 
 export default async function CodeDetailPage({
     params,
 }: {
-    params: { id: string };
+    params: Promise<{ id: string }>;
 }) {
-    const { id } = params;
+    const { id } = await params;
     const example = await getCodeExample(id);
 
     if (!example) {
