@@ -1,15 +1,7 @@
-import clientPromise from '@/lib/mongodb';
+import connectDB from '@/lib/mongoose';
 import CodeExample from '@/models/CodeExample';
 import User from '@/models/User';
-import mongoose from 'mongoose';
 import { NextRequest, NextResponse } from 'next/server';
-
-// Kết nối database
-async function connectDB() {
-    if (mongoose.connection.readyState !== 1) {
-        await clientPromise;
-    }
-}
 
 export async function GET(request: NextRequest) {
     try {

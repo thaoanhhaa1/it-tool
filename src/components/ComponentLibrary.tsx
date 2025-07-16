@@ -1,445 +1,172 @@
 'use client';
 
-import { useState } from 'react';
+import {
+    categoryService,
+    codeExampleService,
+    type Category,
+    type CodeExample as CodeExampleAPI,
+} from '@/services/apiService';
+import { useEffect, useState } from 'react';
 import ComponentPreview from './ComponentPreview';
 
-// Types for code examples (components and functions)
+// Types for component interface
 interface CodeExample {
     id: string;
     name: string;
     description: string;
     type: 'component' | 'function';
-    library:
-        | 'MUI'
-        | 'Ant Design'
-        | 'Chakra UI'
-        | 'Custom'
-        | 'Headless UI'
-        | 'JavaScript'
-        | 'TypeScript'
-        | 'React'
-        | 'Utility';
+    library: string;
     tags: string[];
     code: string;
-}
-
-import { mockCodeExamples } from '@/lib/seed-mock';
-
-// Convert mock data to ComponentLibrary format
-const codeExamples: CodeExample[] = mockCodeExamples.map((mock) => ({
-    id: mock.id,
-    name: mock.name,
-    description: mock.description,
-    type: mock.type as 'component' | 'function',
-    library: mock.library as
-        | 'MUI'
-        | 'Ant Design'
-        | 'Chakra UI'
-        | 'Custom'
-        | 'Headless UI'
-        | 'JavaScript'
-        | 'TypeScript'
-        | 'React'
-        | 'Utility',
-    tags: mock.tags,
-    code: mock.code,
-}));
-
-// Original hardcoded data (backup)
-const originalCodeExamples: CodeExample[] = [
-    // Component Examples
-    {
-        id: 'mui-button',
-        name: 'MUI Button Variants',
-        description:
-            'Các biến thể button của Material-UI với styling tùy chỉnh',
-        type: 'component',
-        library: 'MUI',
-        tags: ['button', 'mui', 'material-ui', 'variants'],
-        code: `import { Button, Stack } from '@mui/material';
-import { styled } from '@mui/material/styles';
-
-const CustomButton = styled(Button)(({ theme }) => ({
-  borderRadius: 12,
-  textTransform: 'none',
-  fontWeight: 600,
-  '&.gradient': {
-    background: 'linear-gradient(45deg, #FE6B8B 30%, #FF8E53 90%)',
-    border: 0,
-    color: 'white',
-    '&:hover': {
-      background: 'linear-gradient(45deg, #FE6B8B 60%, #FF8E53 100%)',
-    },
-  },
-}));
-
-export default function MUIButtonVariants() {
-  return (
-    <Stack spacing={2} direction="row" flexWrap="wrap">
-      <CustomButton variant="contained">
-        Standard Button
-      </CustomButton>
-      <CustomButton variant="outlined">
-        Outlined Button
-      </CustomButton>
-      <CustomButton className="gradient">
-        Gradient Button
-      </CustomButton>
-    </Stack>
-  );
-}`,
-    },
-    {
-        id: 'ant-form',
-        name: 'Ant Design Form',
-        description: 'Form validation và xử lý dữ liệu với Ant Design',
-        type: 'component',
-        library: 'Ant Design',
-        tags: ['form', 'antd', 'validation', 'input'],
-        code: `import { Form, Input, Button, message } from 'antd';
-import { UserOutlined, LockOutlined } from '@ant-design/icons';
-
-interface LoginFormValues {
-  username: string;
-  password: string;
-}
-
-export default function LoginForm() {
-  const [form] = Form.useForm();
-
-  const onFinish = (values: LoginFormValues) => {
-    console.log('Received values:', values);
-    message.success('Đăng nhập thành công!');
-  };
-
-  return (
-    <Form
-      form={form}
-      name="login"
-      onFinish={onFinish}
-      style={{ maxWidth: 300 }}
-    >
-      <Form.Item
-        name="username"
-        rules={[
-          { required: true, message: 'Vui lòng nhập tên đăng nhập!' }
-        ]}
-      >
-        <Input 
-          prefix={<UserOutlined />} 
-          placeholder="Tên đăng nhập" 
-        />
-      </Form.Item>
-      <Form.Item
-        name="password"
-        rules={[
-          { required: true, message: 'Vui lòng nhập mật khẩu!' }
-        ]}
-      >
-        <Input.Password 
-          prefix={<LockOutlined />} 
-          placeholder="Mật khẩu" 
-        />
-      </Form.Item>
-      <Form.Item>
-        <Button type="primary" htmlType="submit" block>
-          Đăng nhập
-        </Button>
-      </Form.Item>
-    </Form>
-  );
-}`,
-    },
-    // Function Examples
-    {
-        id: 'debounce-hook',
-        name: 'useDebounce Hook',
-        description: 'Custom hook để debounce giá trị, hữu ích cho search',
-        type: 'function',
-        library: 'React',
-        tags: ['hook', 'debounce', 'performance', 'search'],
-        code: `import { useState, useEffect } from 'react';
-
-/**
- * Custom hook để debounce một giá trị
- * @param value - Giá trị cần debounce
- * @param delay - Thời gian delay (ms)
- * @returns Giá trị đã được debounce
- */
-export function useDebounce<T>(value: T, delay: number): T {
-  const [debouncedValue, setDebouncedValue] = useState<T>(value);
-
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedValue(value);
-    }, delay);
-
-    return () => {
-      clearTimeout(handler);
+    author?: {
+        username: string;
+        fullName: string;
     };
-  }, [value, delay]);
-
-  return debouncedValue;
+    likes?: number;
+    views?: number;
+    createdAt?: string;
+    category?: string;
+    difficulty?: 'beginner' | 'intermediate' | 'advanced';
 }
-
-// Cách sử dụng:
-export function SearchComponent() {
-  const [searchTerm, setSearchTerm] = useState('');
-  const debouncedSearchTerm = useDebounce(searchTerm, 300);
-
-  useEffect(() => {
-    if (debouncedSearchTerm) {
-      // Thực hiện API call ở đây
-      console.log('Searching for:', debouncedSearchTerm);
-    }
-  }, [debouncedSearchTerm]);
-
-  return (
-    <input
-      type="text"
-      value={searchTerm}
-      onChange={(e) => setSearchTerm(e.target.value)}
-      placeholder="Tìm kiếm..."
-    />
-  );
-}`,
-    },
-    {
-        id: 'format-currency',
-        name: 'formatCurrency',
-        description: 'Function format tiền tệ Việt Nam với đầy đủ options',
-        type: 'function',
-        library: 'Utility',
-        tags: ['currency', 'format', 'vietnam', 'utility', 'intl'],
-        code: `/**
- * Format số thành định dạng tiền tệ Việt Nam
- * @param amount - Số tiền cần format
- * @param options - Tùy chọn format
- */
-interface FormatCurrencyOptions {
-  currency?: 'VND' | 'USD' | 'EUR';
-  locale?: string;
-  minimumFractionDigits?: number;
-  maximumFractionDigits?: number;
-  showSymbol?: boolean;
-}
-
-export function formatCurrency(
-  amount: number,
-  options: FormatCurrencyOptions = {}
-): string {
-  const {
-    currency = 'VND',
-    locale = 'vi-VN',
-    minimumFractionDigits = 0,
-    maximumFractionDigits = 0,
-    showSymbol = true
-  } = options;
-
-  const formatter = new Intl.NumberFormat(locale, {
-    style: showSymbol ? 'currency' : 'decimal',
-    currency,
-    minimumFractionDigits,
-    maximumFractionDigits,
-  });
-
-  return formatter.format(amount);
-}
-
-// Cách sử dụng:
-console.log(formatCurrency(1000000)); // "1.000.000 ₫"
-console.log(formatCurrency(1234.56, { 
-  currency: 'USD', 
-  locale: 'en-US',
-  maximumFractionDigits: 2 
-})); // "$1,234.56"
-console.log(formatCurrency(500000, { showSymbol: false })); // "500.000"`,
-    },
-    {
-        id: 'api-client',
-        name: 'API Client Class',
-        description:
-            'Class để xử lý API calls với error handling và interceptors',
-        type: 'function',
-        library: 'TypeScript',
-        tags: ['api', 'http', 'axios', 'client', 'error-handling'],
-        code: `import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
-
-interface ApiClientConfig {
-  baseURL: string;
-  timeout?: number;
-  headers?: Record<string, string>;
-}
-
-interface ApiResponse<T = any> {
-  data: T;
-  message?: string;
-  success: boolean;
-}
-
-export class ApiClient {
-  private client: AxiosInstance;
-
-  constructor(config: ApiClientConfig) {
-    this.client = axios.create({
-      baseURL: config.baseURL,
-      timeout: config.timeout || 10000,
-      headers: {
-        'Content-Type': 'application/json',
-        ...config.headers,
-      },
-    });
-
-    this.setupInterceptors();
-  }
-
-  private setupInterceptors(): void {
-    // Request interceptor
-    this.client.interceptors.request.use(
-      (config) => {
-        const token = localStorage.getItem('authToken');
-        if (token) {
-          config.headers.Authorization = \`Bearer \${token}\`;
-        }
-        return config;
-      },
-      (error) => Promise.reject(error)
-    );
-
-    // Response interceptor
-    this.client.interceptors.response.use(
-      (response: AxiosResponse<ApiResponse>) => response,
-      (error) => {
-        if (error.response?.status === 401) {
-          // Handle unauthorized
-          localStorage.removeItem('authToken');
-          window.location.href = '/login';
-        }
-        return Promise.reject(error);
-      }
-    );
-  }
-
-  async get<T>(url: string, config?: AxiosRequestConfig): Promise<T> {
-    const response = await this.client.get<ApiResponse<T>>(url, config);
-    return response.data.data;
-  }
-
-  async post<T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
-    const response = await this.client.post<ApiResponse<T>>(url, data, config);
-    return response.data.data;
-  }
-
-  async put<T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
-    const response = await this.client.put<ApiResponse<T>>(url, data, config);
-    return response.data.data;
-  }
-
-  async delete<T>(url: string, config?: AxiosRequestConfig): Promise<T> {
-    const response = await this.client.delete<ApiResponse<T>>(url, config);
-    return response.data.data;
-  }
-}
-
-// Cách sử dụng:
-const apiClient = new ApiClient({
-  baseURL: 'https://api.example.com',
-  timeout: 5000,
-});
-
-// GET request
-const users = await apiClient.get<User[]>('/users');
-
-// POST request
-const newUser = await apiClient.post<User>('/users', {
-  name: 'John Doe',
-  email: 'john@example.com'
-});`,
-    },
-    {
-        id: 'local-storage-hook',
-        name: 'useLocalStorage Hook',
-        description: 'Hook để quản lý localStorage với TypeScript safety',
-        type: 'function',
-        library: 'React',
-        tags: ['hook', 'localStorage', 'persistence', 'typescript'],
-        code: `import { useState, useEffect } from 'react';
-
-/**
- * Custom hook để quản lý localStorage
- * @param key - Key trong localStorage
- * @param initialValue - Giá trị khởi tạo
- * @returns [value, setValue] tuple
- */
-export function useLocalStorage<T>(
-  key: string,
-  initialValue: T
-): [T, (value: T | ((val: T) => T)) => void] {
-  // State để lưu giá trị
-  const [storedValue, setStoredValue] = useState<T>(() => {
-    if (typeof window === 'undefined') {
-      return initialValue;
-    }
-    
-    try {
-      const item = window.localStorage.getItem(key);
-      return item ? JSON.parse(item) : initialValue;
-    } catch (error) {
-      console.error(\`Error reading localStorage key "\${key}":\`, error);
-      return initialValue;
-    }
-  });
-
-  // Function để set giá trị
-  const setValue = (value: T | ((val: T) => T)) => {
-    try {
-      // Cho phép value là function để có API giống useState
-      const valueToStore = value instanceof Function ? value(storedValue) : value;
-      
-      setStoredValue(valueToStore);
-      
-      // Lưu vào localStorage
-      if (typeof window !== 'undefined') {
-        window.localStorage.setItem(key, JSON.stringify(valueToStore));
-      }
-    } catch (error) {
-      console.error(\`Error setting localStorage key "\${key}":\`, error);
-    }
-  };
-
-  return [storedValue, setValue];
-}
-
-// Cách sử dụng:
-export function UserPreferences() {
-  const [theme, setTheme] = useLocalStorage<'light' | 'dark'>('theme', 'light');
-  const [language, setLanguage] = useLocalStorage('language', 'vi');
-
-  return (
-    <div>
-      <button onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}>
-        Current theme: {theme}
-      </button>
-      <select value={language} onChange={(e) => setLanguage(e.target.value)}>
-        <option value="vi">Tiếng Việt</option>
-        <option value="en">English</option>
-      </select>
-    </div>
-  );
-}`,
-    },
-];
 
 export default function CodeLibrary() {
+    const [codeExamples, setCodeExamples] = useState<CodeExample[]>([]);
+    const [categories, setCategories] = useState<Category[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedLibrary, setSelectedLibrary] = useState<string>('');
     const [selectedType, setSelectedType] = useState<
         'all' | 'component' | 'function'
     >('all');
+    const [selectedCategory, setSelectedCategory] = useState<string>('');
 
-    // Filter examples based on search term, library, and type
+    // Fetch data from APIs using services
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                setLoading(true);
+                setError(null);
+
+                // Fetch categories and code examples in parallel using services
+                const [categoriesData, codeExamplesData] = await Promise.all([
+                    categoryService.getAll(),
+                    codeExampleService.getAll({ limit: 50 }),
+                ]);
+
+                setCategories(categoriesData);
+
+                // Transform API data to match component interface
+                const transformedExamples: CodeExample[] =
+                    codeExamplesData.codeExamples.map(
+                        (example: CodeExampleAPI) => ({
+                            id: example._id,
+                            name: example.name,
+                            description: example.description,
+                            type: example.type,
+                            library: example.library,
+                            tags: example.tags || [],
+                            code: example.code,
+                            author: example.author,
+                            likes: example.likes || 0,
+                            views: example.views || 0,
+                            createdAt: example.createdAt,
+                            category: example.category,
+                            difficulty: example.difficulty,
+                        }),
+                    );
+                setCodeExamples(transformedExamples);
+            } catch (err) {
+                console.error('Error fetching data:', err);
+                setError(
+                    'Không thể tải dữ liệu. Vui lòng kiểm tra kết nối và thử lại.',
+                );
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchData();
+    }, []);
+
+    // Handle search and filter updates
+    const handleSearch = async (newFilters: {
+        search?: string;
+        type?: 'component' | 'function';
+        library?: string;
+        category?: string;
+    }) => {
+        try {
+            setLoading(true);
+            const filters: Record<string, unknown> = { limit: 50 };
+
+            if (newFilters.search) filters.search = newFilters.search;
+            if (newFilters.type) filters.type = newFilters.type;
+            if (newFilters.library) filters.library = newFilters.library;
+            if (newFilters.category) filters.category = newFilters.category;
+
+            const codeExamplesData = await codeExampleService.getAll(filters);
+
+            const transformedExamples: CodeExample[] =
+                codeExamplesData.codeExamples.map(
+                    (example: CodeExampleAPI) => ({
+                        id: example._id,
+                        name: example.name,
+                        description: example.description,
+                        type: example.type,
+                        library: example.library,
+                        tags: example.tags || [],
+                        code: example.code,
+                        author: example.author,
+                        likes: example.likes || 0,
+                        views: example.views || 0,
+                        createdAt: example.createdAt,
+                        category: example.category,
+                        difficulty: example.difficulty,
+                    }),
+                );
+
+            setCodeExamples(transformedExamples);
+        } catch (err) {
+            console.error('Error searching:', err);
+            setError('Lỗi khi tìm kiếm. Vui lòng thử lại.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Debounced search effect
+    useEffect(() => {
+        const timeoutId = setTimeout(() => {
+            const filters = {
+                search: searchTerm,
+                type:
+                    selectedType !== 'all'
+                        ? (selectedType as 'component' | 'function')
+                        : undefined,
+                library: selectedLibrary || undefined,
+                category: selectedCategory || undefined,
+            };
+
+            // Only search if there are actual filters applied
+            if (
+                searchTerm ||
+                selectedType !== 'all' ||
+                selectedLibrary ||
+                selectedCategory
+            ) {
+                handleSearch(filters);
+            }
+        }, 500);
+
+        return () => clearTimeout(timeoutId);
+    }, [searchTerm, selectedType, selectedLibrary, selectedCategory]);
+
+    // Filter examples locally for immediate feedback
     const filteredExamples = codeExamples.filter((example) => {
         const matchesSearch =
+            !searchTerm ||
             example.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
             example.description
                 .toLowerCase()
@@ -450,17 +177,72 @@ export default function CodeLibrary() {
 
         const matchesLibrary =
             !selectedLibrary || example.library === selectedLibrary;
-
         const matchesType =
             selectedType === 'all' || example.type === selectedType;
+        const matchesCategory =
+            !selectedCategory || example.category === selectedCategory;
 
-        return matchesSearch && matchesLibrary && matchesType;
+        return (
+            matchesSearch && matchesLibrary && matchesType && matchesCategory
+        );
     });
 
     // Get unique libraries for filter
     const uniqueLibraries = Array.from(
         new Set(codeExamples.map((example) => example.library)),
     );
+
+    const handleRetry = () => {
+        setError(null);
+        window.location.reload();
+    };
+
+    if (loading && codeExamples.length === 0) {
+        return (
+            <div className='space-y-8'>
+                <div className='text-center space-y-4'>
+                    <h1 className='text-4xl font-bold text-gray-900'>
+                        Code Library
+                    </h1>
+                    <p className='text-xl text-gray-600 max-w-2xl mx-auto'>
+                        Chia sẻ và khám phá các React Components và JavaScript
+                        Functions hữu ích được xây dựng với các thư viện UI phổ
+                        biến
+                    </p>
+                </div>
+                <div className='text-center py-12'>
+                    <div className='animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto'></div>
+                    <p className='text-gray-600 mt-4'>Đang tải dữ liệu...</p>
+                </div>
+            </div>
+        );
+    }
+
+    if (error && codeExamples.length === 0) {
+        return (
+            <div className='space-y-8'>
+                <div className='text-center space-y-4'>
+                    <h1 className='text-4xl font-bold text-gray-900'>
+                        Code Library
+                    </h1>
+                    <p className='text-xl text-gray-600 max-w-2xl mx-auto'>
+                        Chia sẻ và khám phá các React Components và JavaScript
+                        Functions hữu ích được xây dựng với các thư viện UI phổ
+                        biến
+                    </p>
+                </div>
+                <div className='text-center py-12'>
+                    <div className='text-red-500 text-lg'>{error}</div>
+                    <button
+                        onClick={handleRetry}
+                        className='mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors'
+                    >
+                        Thử lại
+                    </button>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className='space-y-8'>
@@ -531,6 +313,27 @@ export default function CodeLibrary() {
                             ))}
                         </select>
                     </div>
+
+                    {/* Category Filter */}
+                    <div>
+                        <label className='block text-sm font-medium text-gray-700 mb-1'>
+                            Danh mục
+                        </label>
+                        <select
+                            value={selectedCategory}
+                            onChange={(e) =>
+                                setSelectedCategory(e.target.value)
+                            }
+                            className='px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent'
+                        >
+                            <option value=''>Tất cả danh mục</option>
+                            {categories.map((category) => (
+                                <option key={category._id} value={category._id}>
+                                    {category.name}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
                 </div>
 
                 {/* Active Filters Display */}
@@ -559,7 +362,32 @@ export default function CodeLibrary() {
                             </button>
                         </span>
                     )}
+                    {selectedCategory && (
+                        <span className='inline-flex items-center px-3 py-1 rounded-full text-sm bg-purple-100 text-purple-800'>
+                            {
+                                categories.find(
+                                    (cat) => cat._id === selectedCategory,
+                                )?.name
+                            }
+                            <button
+                                onClick={() => setSelectedCategory('')}
+                                className='ml-2 text-purple-600 hover:text-purple-800'
+                            >
+                                ×
+                            </button>
+                        </span>
+                    )}
                 </div>
+
+                {/* Loading indicator for search */}
+                {loading && codeExamples.length > 0 && (
+                    <div className='text-center py-2'>
+                        <div className='inline-flex items-center text-blue-600'>
+                            <div className='animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mr-2'></div>
+                            Đang tìm kiếm...
+                        </div>
+                    </div>
+                )}
             </div>
 
             {/* Results Count */}
@@ -576,7 +404,7 @@ export default function CodeLibrary() {
             </div>
 
             {/* No Results */}
-            {filteredExamples.length === 0 && (
+            {filteredExamples.length === 0 && !loading && (
                 <div className='text-center py-12'>
                     <div className='text-gray-500 text-lg'>
                         Không tìm thấy kết quả phù hợp
@@ -584,6 +412,13 @@ export default function CodeLibrary() {
                     <p className='text-gray-400 mt-2'>
                         Thử thay đổi từ khóa tìm kiếm hoặc bộ lọc
                     </p>
+                </div>
+            )}
+
+            {/* Error display for search errors */}
+            {error && codeExamples.length > 0 && (
+                <div className='bg-red-50 border border-red-200 rounded-lg p-4'>
+                    <div className='text-red-700'>{error}</div>
                 </div>
             )}
         </div>

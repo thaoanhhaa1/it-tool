@@ -10,25 +10,25 @@ interface CodeExample {
     name: string;
     description: string;
     type: 'component' | 'function';
-    library:
-        | 'MUI'
-        | 'Ant Design'
-        | 'Chakra UI'
-        | 'Custom'
-        | 'Headless UI'
-        | 'JavaScript'
-        | 'TypeScript'
-        | 'React'
-        | 'Utility';
+    library: string;
     tags: string[];
     code: string;
+    author?: {
+        username: string;
+        fullName: string;
+    };
+    likes?: number;
+    views?: number;
+    createdAt?: string;
+    category?: string;
+    difficulty?: 'beginner' | 'intermediate' | 'advanced';
 }
 
 interface ComponentPreviewProps {
     example: CodeExample;
 }
 
-const libraryColors = {
+const libraryColors: Record<string, string> = {
     MUI: 'bg-blue-100 text-blue-800',
     'Ant Design': 'bg-orange-100 text-orange-800',
     'Chakra UI': 'bg-teal-100 text-teal-800',
@@ -87,7 +87,8 @@ export default function ComponentPreview({ example }: ComponentPreviewProps) {
                     {/* Library Badge */}
                     <span
                         className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                            libraryColors[example.library]
+                            libraryColors[example.library] ||
+                            'bg-gray-100 text-gray-800'
                         }`}
                     >
                         {example.library}
