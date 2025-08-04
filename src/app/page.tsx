@@ -117,19 +117,6 @@ export default function Home() {
             ],
             color: 'yellow',
         },
-        {
-            href: '/component-library',
-            title: 'Component Library',
-            description: 'Thư viện React components đẹp và tái sử dụng',
-            icon: '🧩',
-            features: [
-                'Modern UI',
-                'Responsive design',
-                'Dark mode',
-                'Accessible',
-            ],
-            color: 'pink',
-        },
     ];
 
     const getColorClasses = (color: string) => {

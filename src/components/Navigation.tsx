@@ -28,10 +28,6 @@ const navItems = [
         href: '/code-library',
         label: 'Code Library',
     },
-    {
-        href: '/component-library',
-        label: 'Component Library',
-    },
 ];
 
 // Server Component - renders most of the navigation

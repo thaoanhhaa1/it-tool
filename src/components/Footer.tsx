@@ -26,10 +26,6 @@ export default function Footer() {
                 href: '/code-library',
                 label: 'Code Library',
             },
-            {
-                href: '/component-library',
-                label: 'Component Library',
-            },
         ],
         resources: [
             {
