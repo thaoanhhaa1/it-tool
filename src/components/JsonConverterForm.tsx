@@ -292,6 +292,7 @@ function getTypeFromValue(
 function getTypeFromValueSeparate(
     value: JsonValue,
     typeName: string | undefined = undefined,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     _depth: number = 0,
     useCamelCaseFields: boolean = false,
     useProperCamelCase: boolean = false,

@@ -368,7 +368,7 @@ export async function seedDatabase() {
                 await mongoose.disconnect();
                 console.log('🔌 Disconnected from MongoDB (cleanup)');
             }
-        } catch (disconnectError) {
+        } catch {
             // Ignore disconnect errors
         }
 

@@ -5,13 +5,15 @@ import Navigation from '../components/Navigation';
 export const metadata: Metadata = {
     title: 'It Tools - Bộ công cụ tiện ích miễn phí cho Developers',
     description:
-        'Bộ công cụ toàn diện cho developers: JSON to TypeScript, Interface to Zod, HTML to JSX. Miễn phí, nhanh chóng, chính xác và không cần đăng ký.',
+        'Bộ công cụ toàn diện cho developers: JSON to TypeScript, Interface to Zod, HTML to JSX, CURL Converter. Miễn phí, nhanh chóng, chính xác và không cần đăng ký.',
     keywords: [
         'it tools',
         'developer tools',
         'JSON to TypeScript converter',
         'Interface to Zod converter',
         'HTML to JSX converter',
+        'CURL converter',
+        'GraphQL converter',
         'programming tools',
         'code converter',
         'web development tools',
@@ -22,7 +24,7 @@ export const metadata: Metadata = {
     openGraph: {
         title: 'It Tools - Bộ công cụ tiện ích miễn phí cho Developers',
         description:
-            'Bộ công cụ toàn diện cho developers: JSON to TypeScript, Interface to Zod, HTML to JSX. Miễn phí, nhanh chóng và chính xác.',
+            'Bộ công cụ toàn diện cho developers: JSON to TypeScript, Interface to Zod, HTML to JSX, CURL Converter. Miễn phí, nhanh chóng và chính xác.',
         url: 'https://it-tool-two.vercel.app',
         images: [
             {
@@ -37,7 +39,7 @@ export const metadata: Metadata = {
         card: 'summary_large_image',
         title: 'It Tools - Bộ công cụ tiện ích miễn phí cho Developers',
         description:
-            'JSON to TypeScript, Interface to Zod, HTML to JSX và nhiều công cụ khác. Miễn phí và không cần đăng ký.',
+            'JSON to TypeScript, Interface to Zod, HTML to JSX, CURL Converter và nhiều công cụ khác. Miễn phí và không cần đăng ký.',
     },
     alternates: {
         canonical: 'https://it-tool-two.vercel.app',
@@ -58,6 +60,7 @@ export default function Home() {
                 'CamelCase formatting',
                 'Type inference',
             ],
+            color: 'blue',
         },
         {
             href: '/interface-to-zod',
@@ -71,6 +74,7 @@ export default function Home() {
                 'Runtime checks',
                 'Error handling',
             ],
+            color: 'green',
         },
         {
             href: '/html-to-jsx',
@@ -84,24 +88,77 @@ export default function Home() {
                 'Self-closing tags',
                 'Comment handling',
             ],
+            color: 'purple',
+        },
+        {
+            href: '/curl-converter',
+            title: 'CURL Converter',
+            description:
+                'Chuyển đổi curl command sang GraphQL query, mutation, REST API và TypeScript types',
+            icon: '🌐',
+            features: [
+                'GraphQL Query/Mutation',
+                'REST API code',
+                'TypeScript types',
+                'Headers support',
+            ],
+            color: 'indigo',
+        },
+        {
+            href: '/code-library',
+            title: 'Code Library',
+            description: 'Thư viện code mẫu và snippets hữu ích cho developers',
+            icon: '📚',
+            features: [
+                'Code snippets',
+                'Best practices',
+                'Common patterns',
+                'Ready to use',
+            ],
+            color: 'yellow',
+        },
+        {
+            href: '/component-library',
+            title: 'Component Library',
+            description: 'Thư viện React components đẹp và tái sử dụng',
+            icon: '🧩',
+            features: [
+                'Modern UI',
+                'Responsive design',
+                'Dark mode',
+                'Accessible',
+            ],
+            color: 'pink',
         },
     ];
+
+    const getColorClasses = (color: string) => {
+        const colors = {
+            blue: 'hover:border-blue-300 dark:hover:border-blue-600 group-hover:text-blue-600 dark:group-hover:text-blue-400',
+            green: 'hover:border-green-300 dark:hover:border-green-600 group-hover:text-green-600 dark:group-hover:text-green-400',
+            purple: 'hover:border-purple-300 dark:hover:border-purple-600 group-hover:text-purple-600 dark:group-hover:text-purple-400',
+            indigo: 'hover:border-indigo-300 dark:hover:border-indigo-600 group-hover:text-indigo-600 dark:group-hover:text-indigo-400',
+            yellow: 'hover:border-yellow-300 dark:hover:border-yellow-600 group-hover:text-yellow-600 dark:group-hover:text-yellow-400',
+            pink: 'hover:border-pink-300 dark:hover:border-pink-600 group-hover:text-pink-600 dark:group-hover:text-pink-400',
+        };
+        return colors[color as keyof typeof colors] || colors.blue;
+    };
 
     return (
         <div className='min-h-screen bg-gray-50 dark:bg-gray-900'>
             <Navigation />
 
-            <main className='max-w-6xl mx-auto px-6 py-12'>
+            <main className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12'>
                 {/* Hero Section */}
                 <div className='text-center mb-16'>
-                    <h1 className='text-5xl font-bold text-gray-900 dark:text-gray-100 mb-6'>
+                    <h1 className='text-5xl md:text-6xl font-bold text-gray-900 dark:text-gray-100 mb-6'>
                         It Tools
                     </h1>
-                    <p className='text-xl text-gray-600 dark:text-gray-400 mb-8 max-w-3xl mx-auto'>
+                    <p className='text-xl text-gray-600 dark:text-gray-400 mb-8 max-w-4xl mx-auto leading-relaxed'>
                         Bộ công cụ tiện ích dành cho developers. Chuyển đổi JSON
                         sang TypeScript interface, TypeScript interface sang Zod
-                        schema, và HTML sang JSX component một cách nhanh chóng,
-                        miễn phí và dễ sử dụng.
+                        schema, HTML sang JSX component, và nhiều công cụ khác
+                        một cách nhanh chóng, miễn phí và dễ sử dụng.
                     </p>
                     <div className='flex flex-wrap justify-center gap-4'>
                         <span className='px-4 py-2 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded-full text-sm font-medium'>
@@ -113,19 +170,24 @@ export default function Home() {
                         <span className='px-4 py-2 bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200 rounded-full text-sm font-medium'>
                             Open Source
                         </span>
+                        <span className='px-4 py-2 bg-indigo-100 dark:bg-indigo-900 text-indigo-800 dark:text-indigo-200 rounded-full text-sm font-medium'>
+                            Responsive
+                        </span>
                     </div>
                 </div>
 
                 {/* Tools Grid */}
-                <div className='grid grid-cols-1 md:grid-cols-2 gap-8 mb-16'>
+                <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16'>
                     {tools.map((tool) => (
                         <Link
                             key={tool.href}
                             href={tool.href}
-                            className='group block p-8 bg-white dark:bg-gray-800 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600'
+                            className={`group block p-8 bg-white dark:bg-gray-800 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-200 dark:border-gray-700 ${getColorClasses(
+                                tool.color,
+                            )}`}
                         >
                             <div className='text-4xl mb-4'>{tool.icon}</div>
-                            <h3 className='text-2xl font-bold text-gray-900 dark:text-gray-100 mb-3 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors'>
+                            <h3 className='text-2xl font-bold text-gray-900 dark:text-gray-100 mb-3 transition-colors'>
                                 {tool.title}
                             </h3>
                             <p className='text-gray-600 dark:text-gray-400 mb-6 leading-relaxed'>
@@ -187,8 +249,8 @@ export default function Home() {
                                 Nhanh chóng
                             </h3>
                             <p className='text-gray-600 dark:text-gray-400'>
-                                Chuyển đổi JSON thành TypeScript interface chỉ
-                                trong vài giây
+                                Chuyển đổi code chỉ trong vài giây với giao diện
+                                đơn giản
                             </p>
                         </div>
                         <div className='p-6'>
@@ -211,8 +273,8 @@ export default function Home() {
                                 Chính xác
                             </h3>
                             <p className='text-gray-600 dark:text-gray-400'>
-                                Tự động phát hiện kiểu dữ liệu và tạo interface
-                                chính xác
+                                Tự động phát hiện kiểu dữ liệu và tạo code chính
+                                xác
                             </p>
                         </div>
                         <div className='p-6'>
@@ -254,7 +316,7 @@ export default function Home() {
                     <div className='flex flex-wrap justify-center gap-4'>
                         <Link
                             href='/json-to-typescript'
-                            className='inline-flex items-center px-8 py-3 bg-white text-blue-600 rounded-lg font-semibold hover:bg-gray-100 transition-colors shadow-lg'
+                            className='inline-flex items-center px-6 py-3 bg-white text-blue-600 rounded-lg font-semibold hover:bg-gray-100 transition-colors shadow-lg'
                         >
                             JSON to TypeScript
                             <svg
@@ -273,7 +335,7 @@ export default function Home() {
                         </Link>
                         <Link
                             href='/interface-to-zod'
-                            className='inline-flex items-center px-8 py-3 border-2 border-white text-white rounded-lg font-semibold hover:bg-white hover:text-blue-600 transition-colors'
+                            className='inline-flex items-center px-6 py-3 border-2 border-white text-white rounded-lg font-semibold hover:bg-white hover:text-blue-600 transition-colors'
                         >
                             Interface to Zod
                             <svg
@@ -292,9 +354,28 @@ export default function Home() {
                         </Link>
                         <Link
                             href='/html-to-jsx'
-                            className='inline-flex items-center px-8 py-3 border-2 border-white text-white rounded-lg font-semibold hover:bg-white hover:text-blue-600 transition-colors'
+                            className='inline-flex items-center px-6 py-3 border-2 border-white text-white rounded-lg font-semibold hover:bg-white hover:text-blue-600 transition-colors'
                         >
                             HTML to JSX
+                            <svg
+                                className='w-5 h-5 ml-2'
+                                fill='none'
+                                stroke='currentColor'
+                                viewBox='0 0 24 24'
+                            >
+                                <path
+                                    strokeLinecap='round'
+                                    strokeLinejoin='round'
+                                    strokeWidth={2}
+                                    d='M9 5l7 7-7 7'
+                                />
+                            </svg>
+                        </Link>
+                        <Link
+                            href='/curl-converter'
+                            className='inline-flex items-center px-6 py-3 border-2 border-white text-white rounded-lg font-semibold hover:bg-white hover:text-blue-600 transition-colors'
+                        >
+                            Curl Converter
                             <svg
                                 className='w-5 h-5 ml-2'
                                 fill='none'
