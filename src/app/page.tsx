@@ -5,12 +5,13 @@ import Navigation from '../components/Navigation';
 export const metadata: Metadata = {
     title: 'It Tools - Bộ công cụ tiện ích miễn phí cho Developers',
     description:
-        'Bộ công cụ toàn diện cho developers: JSON to TypeScript, Interface to Zod, HTML to JSX, CURL Converter. Miễn phí, nhanh chóng, chính xác và không cần đăng ký.',
+        'Bộ công cụ toàn diện cho developers: JSON to TypeScript, Interface to Zod, JSON to Interface & Zod, HTML to JSX, CURL Converter. Miễn phí, nhanh chóng, chính xác và không cần đăng ký.',
     keywords: [
         'it tools',
         'developer tools',
         'JSON to TypeScript converter',
         'Interface to Zod converter',
+        'JSON to Interface Zod converter',
         'HTML to JSX converter',
         'CURL converter',
         'GraphQL converter',
@@ -18,13 +19,14 @@ export const metadata: Metadata = {
         'code converter',
         'web development tools',
         'TypeScript tools',
+        'Zod schema generator',
         'React tools',
         'free online tools',
     ],
     openGraph: {
         title: 'It Tools - Bộ công cụ tiện ích miễn phí cho Developers',
         description:
-            'Bộ công cụ toàn diện cho developers: JSON to TypeScript, Interface to Zod, HTML to JSX, CURL Converter. Miễn phí, nhanh chóng và chính xác.',
+            'Bộ công cụ toàn diện cho developers: JSON to TypeScript, Interface to Zod, JSON to Interface & Zod, HTML to JSX, CURL Converter. Miễn phí, nhanh chóng và chính xác.',
         url: 'https://it-tool-two.vercel.app',
         images: [
             {
@@ -39,7 +41,7 @@ export const metadata: Metadata = {
         card: 'summary_large_image',
         title: 'It Tools - Bộ công cụ tiện ích miễn phí cho Developers',
         description:
-            'JSON to TypeScript, Interface to Zod, HTML to JSX, CURL Converter và nhiều công cụ khác. Miễn phí và không cần đăng ký.',
+            'JSON to TypeScript, Interface to Zod, JSON to Interface & Zod, HTML to JSX, CURL Converter và nhiều công cụ khác. Miễn phí và không cần đăng ký.',
     },
     alternates: {
         canonical: 'https://it-tool-two.vercel.app',
@@ -75,6 +77,20 @@ export default function Home() {
                 'Error handling',
             ],
             color: 'green',
+        },
+        {
+            href: '/json-to-interface-zod',
+            title: 'JSON to Interface & Zod',
+            description:
+                'Chuyển đổi JSON sang cả TypeScript interface và Zod schema cùng lúc',
+            icon: '🚀',
+            features: [
+                'Dual conversion',
+                'Type safety + Validation',
+                'Copy separately',
+                'Complete solution',
+            ],
+            color: 'pink',
         },
         {
             href: '/html-to-jsx',
@@ -143,9 +159,10 @@ export default function Home() {
                     </h1>
                     <p className='text-xl text-gray-600 dark:text-gray-400 mb-8 max-w-4xl mx-auto leading-relaxed'>
                         Bộ công cụ tiện ích dành cho developers. Chuyển đổi JSON
-                        sang TypeScript interface, TypeScript interface sang Zod
-                        schema, HTML sang JSX component, và nhiều công cụ khác
-                        một cách nhanh chóng, miễn phí và dễ sử dụng.
+                        sang TypeScript interface, Interface sang Zod schema,
+                        JSON sang cả Interface & Zod cùng lúc, HTML sang JSX
+                        component, và nhiều công cụ khác một cách nhanh chóng,
+                        miễn phí và dễ sử dụng.
                     </p>
                     <div className='flex flex-wrap justify-center gap-4'>
                         <span className='px-4 py-2 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded-full text-sm font-medium'>
@@ -306,6 +323,25 @@ export default function Home() {
                             className='inline-flex items-center px-6 py-3 bg-white text-blue-600 rounded-lg font-semibold hover:bg-gray-100 transition-colors shadow-lg'
                         >
                             JSON to TypeScript
+                            <svg
+                                className='w-5 h-5 ml-2'
+                                fill='none'
+                                stroke='currentColor'
+                                viewBox='0 0 24 24'
+                            >
+                                <path
+                                    strokeLinecap='round'
+                                    strokeLinejoin='round'
+                                    strokeWidth={2}
+                                    d='M9 5l7 7-7 7'
+                                />
+                            </svg>
+                        </Link>
+                        <Link
+                            href='/json-to-interface-zod'
+                            className='inline-flex items-center px-6 py-3 border-2 border-white text-white rounded-lg font-semibold hover:bg-white hover:text-blue-600 transition-colors'
+                        >
+                            JSON to Interface & Zod
                             <svg
                                 className='w-5 h-5 ml-2'
                                 fill='none'

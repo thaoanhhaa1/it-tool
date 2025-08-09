@@ -17,6 +17,10 @@ const navItems = [
         label: 'Interface to Zod',
     },
     {
+        href: '/json-to-interface-zod',
+        label: 'JSON to Interface & Zod',
+    },
+    {
         href: '/html-to-jsx',
         label: 'HTML to JSX',
     },

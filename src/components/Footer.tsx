@@ -15,6 +15,10 @@ export default function Footer() {
                 label: 'Interface to Zod',
             },
             {
+                href: '/json-to-interface-zod',
+                label: 'JSON to Interface & Zod',
+            },
+            {
                 href: '/html-to-jsx',
                 label: 'HTML to JSX',
             },
@@ -96,10 +100,10 @@ export default function Footer() {
                         </Link>
                         <p className='text-gray-600 dark:text-gray-400 mb-4 max-w-md leading-relaxed'>
                             Bộ công cụ tiện ích miễn phí dành cho developers.
-                            Chuyển đổi JSON sang TypeScript interface,
-                            TypeScript interface sang Zod schema, HTML sang JSX
-                            component và nhiều công cụ khác một cách nhanh chóng
-                            và chính xác.
+                            Chuyển đổi JSON sang TypeScript interface, Interface
+                            sang Zod schema, JSON sang cả Interface & Zod, HTML
+                            sang JSX component và nhiều công cụ khác một cách
+                            nhanh chóng và chính xác.
                         </p>
                         <div className='flex flex-wrap gap-2'>
                             <span className='px-3 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded-full text-sm font-medium'>
