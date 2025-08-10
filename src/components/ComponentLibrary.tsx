@@ -1,11 +1,8 @@
 'use client';
 
-import {
-    categoryService,
-    codeExampleService,
-    type Category,
-    type CodeExample as CodeExampleAPI,
-} from '@/services/apiService';
+import { categoryService, codeExampleService } from '@/services/apiService';
+import { ICategory } from '@/types/category/category.interface';
+import { ICodeExample } from '@/types/codeExample/codeExample.interface';
 import { useEffect, useState } from 'react';
 import ComponentPreview from './ComponentPreview';
 
@@ -30,8 +27,8 @@ interface CodeExample {
 }
 
 export default function CodeLibrary() {
-    const [codeExamples, setCodeExamples] = useState<CodeExample[]>([]);
-    const [categories, setCategories] = useState<Category[]>([]);
+    const [codeExamples, setCodeExamples] = useState<ICodeExample[]>([]);
+    const [categories, setCategories] = useState<ICategory[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -54,29 +51,13 @@ export default function CodeLibrary() {
                     categoryService.getAll(),
                     codeExampleService.getAll({ limit: 50 }),
                 ]);
+                console.log(
+                    '🚀 ~ fetchData ~ codeExamplesData:',
+                    codeExamplesData,
+                );
 
-                setCategories(categoriesData);
-
-                // Transform API data to match component interface
-                const transformedExamples: CodeExample[] =
-                    codeExamplesData.codeExamples.map(
-                        (example: CodeExampleAPI) => ({
-                            id: example._id,
-                            name: example.name,
-                            description: example.description,
-                            type: example.type,
-                            library: example.library,
-                            tags: example.tags || [],
-                            code: example.code,
-                            author: example.author,
-                            likes: example.likes || 0,
-                            views: example.views || 0,
-                            createdAt: example.createdAt,
-                            category: example.category,
-                            difficulty: example.difficulty,
-                        }),
-                    );
-                setCodeExamples(transformedExamples);
+                setCategories(categoriesData || []);
+                setCodeExamples(codeExamplesData || []);
             } catch (err) {
                 console.error('Error fetching data:', err);
                 setError(
@@ -108,26 +89,7 @@ export default function CodeLibrary() {
 
             const codeExamplesData = await codeExampleService.getAll(filters);
 
-            const transformedExamples: CodeExample[] =
-                codeExamplesData.codeExamples.map(
-                    (example: CodeExampleAPI) => ({
-                        id: example._id,
-                        name: example.name,
-                        description: example.description,
-                        type: example.type,
-                        library: example.library,
-                        tags: example.tags || [],
-                        code: example.code,
-                        author: example.author,
-                        likes: example.likes || 0,
-                        views: example.views || 0,
-                        createdAt: example.createdAt,
-                        category: example.category,
-                        difficulty: example.difficulty,
-                    }),
-                );
-
-            setCodeExamples(transformedExamples);
+            setCodeExamples(codeExamplesData || []);
         } catch (err) {
             console.error('Error searching:', err);
             setError('Lỗi khi tìm kiếm. Vui lòng thử lại.');
@@ -179,12 +141,10 @@ export default function CodeLibrary() {
             !selectedLibrary || example.library === selectedLibrary;
         const matchesType =
             selectedType === 'all' || example.type === selectedType;
-        const matchesCategory =
-            !selectedCategory || example.category === selectedCategory;
+        // const matchesCategory =
+        //     !selectedCategory || example.category === selectedCategory;
 
-        return (
-            matchesSearch && matchesLibrary && matchesType && matchesCategory
-        );
+        return matchesSearch && matchesLibrary && matchesType;
     });
 
     // Get unique libraries for filter
@@ -328,7 +288,7 @@ export default function CodeLibrary() {
                         >
                             <option value=''>Tất cả danh mục</option>
                             {categories.map((category) => (
-                                <option key={category._id} value={category._id}>
+                                <option key={category.id} value={category.id}>
                                     {category.name}
                                 </option>
                             ))}
@@ -366,7 +326,7 @@ export default function CodeLibrary() {
                         <span className='inline-flex items-center px-3 py-1 rounded-full text-sm bg-purple-100 text-purple-800'>
                             {
                                 categories.find(
-                                    (cat) => cat._id === selectedCategory,
+                                    (cat) => cat.id === selectedCategory,
                                 )?.name
                             }
                             <button

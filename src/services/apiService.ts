@@ -1,4 +1,9 @@
 import { api } from '@/lib/axios';
+import { ICategory } from '@/types/category/category.interface';
+import {
+    ICodeExample,
+    ICodeExampleDetail,
+} from '@/types/codeExample/codeExample.interface';
 
 // Types
 export interface Category {
@@ -69,13 +74,15 @@ export interface CodeExamplesResponse {
 // Category API Service
 export const categoryService = {
     // Get all categories
-    getAll: async (includeSubcategories = false): Promise<Category[]> => {
+    getAll: async (includeSubcategories = false): Promise<Array<ICategory>> => {
         const params = new URLSearchParams();
         if (includeSubcategories) {
             params.append('includeSubcategories', 'true');
         }
 
-        return api.get<Category[]>(`/api/categories?${params.toString()}`);
+        return api.get<Array<ICategory>>(
+            `/api/categories?${params.toString()}`,
+        );
     },
 
     // Get category by ID
@@ -112,7 +119,7 @@ export const codeExampleService = {
     // Get all code examples with filters
     getAll: async (
         filters: CodeExampleFilters = {},
-    ): Promise<CodeExamplesResponse> => {
+    ): Promise<Array<ICodeExample>> => {
         const params = new URLSearchParams();
 
         // Add filters to params
@@ -126,14 +133,14 @@ export const codeExampleService = {
             }
         });
 
-        return api.get<CodeExamplesResponse>(
+        return api.get<Array<ICodeExample>>(
             `/api/code-examples?${params.toString()}`,
         );
     },
 
     // Get code example by ID
-    getById: async (id: string): Promise<CodeExample> => {
-        return api.get<CodeExample>(`/api/code-examples/${id}`);
+    getById: async (id: string): Promise<ICodeExampleDetail> => {
+        return api.get<ICodeExampleDetail>(`/api/code-examples/${id}`);
     },
 
     // Create new code example

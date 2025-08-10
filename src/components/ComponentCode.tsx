@@ -1,7 +1,6 @@
 'use client';
 
-import { Button } from '@/components/ui/button';
-import { useState } from 'react';
+import { CodeEditor } from './animate-ui/components/code-editor';
 
 interface ComponentCodeProps {
     code: string;
@@ -12,50 +11,24 @@ export default function ComponentCode({
     code,
     language = 'tsx',
 }: ComponentCodeProps) {
-    const [copied, setCopied] = useState(false);
-
-    const handleCopy = async () => {
-        try {
-            await navigator.clipboard.writeText(code);
-            setCopied(true);
-            setTimeout(() => setCopied(false), 2000);
-        } catch (err) {
-            console.error('Failed to copy code:', err);
-        }
-    };
-
     return (
-        <div className='relative'>
-            {/* Code Header */}
-            <div className='flex items-center justify-between px-4 py-2 bg-gray-800 text-white text-sm rounded-t-lg'>
-                <span className='font-mono'>{language.toUpperCase()}</span>
-                <Button
-                    variant='ghost'
-                    size='sm'
-                    onClick={handleCopy}
-                    className='text-white hover:text-gray-300 hover:bg-gray-700 h-auto p-1'
-                >
-                    {copied ? (
-                        <span className='flex items-center gap-1'>
-                            ✅ Copied
-                        </span>
-                    ) : (
-                        <span className='flex items-center gap-1'>📋 Copy</span>
-                    )}
-                </Button>
-            </div>
-
-            {/* Code Content */}
-            <div className='bg-gray-900 rounded-b-lg overflow-x-auto'>
-                <pre className='p-4 text-sm text-gray-100 overflow-x-auto'>
-                    <code className='language-tsx whitespace-pre-wrap break-words'>
-                        {code}
-                    </code>
-                </pre>
-            </div>
+        <div className='space-y-4'>
+            {/* Code Editor */}
+            <CodeEditor
+                className='w-full h-fit max-h-[480px]'
+                lang={language}
+                title={`${language.toUpperCase()} Code`}
+                duration={0}
+                delay={0}
+                writing={false}
+                copyButton={true}
+                cursor={false}
+            >
+                {code}
+            </CodeEditor>
 
             {/* Installation Note */}
-            <div className='mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg'>
+            <div className='p-3 bg-blue-50 border border-blue-200 rounded-lg'>
                 <h4 className='text-sm font-medium text-blue-900 mb-2'>
                     📦 Cài đặt dependencies
                 </h4>
@@ -98,7 +71,7 @@ export default function ComponentCode({
             </div>
 
             {/* Usage Tips */}
-            <div className='mt-3 p-3 bg-amber-50 border border-amber-200 rounded-lg'>
+            <div className='p-3 bg-amber-50 border border-amber-200 rounded-lg'>
                 <h4 className='text-sm font-medium text-amber-900 mb-2'>
                     💡 Hướng dẫn sử dụng
                 </h4>

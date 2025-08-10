@@ -2,30 +2,12 @@
 
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { ICodeExample } from '@/types/codeExample/codeExample.interface';
 import Link from 'next/link';
-import ComponentCode from './ComponentCode';
-
-interface CodeExample {
-    id: string;
-    name: string;
-    description: string;
-    type: 'component' | 'function';
-    library: string;
-    tags: string[];
-    code: string;
-    author?: {
-        username: string;
-        fullName: string;
-    };
-    likes?: number;
-    views?: number;
-    createdAt?: string;
-    category?: string;
-    difficulty?: 'beginner' | 'intermediate' | 'advanced';
-}
+import { CodeEditor } from './animate-ui/components/code-editor';
 
 interface ComponentPreviewProps {
-    example: CodeExample;
+    example: ICodeExample;
 }
 
 const libraryColors: Record<string, string> = {
@@ -50,6 +32,18 @@ const typeIcons = {
     function: '🔧',
 };
 
+const difficultyColors = {
+    beginner: 'bg-green-100 text-green-800',
+    intermediate: 'bg-yellow-100 text-yellow-800',
+    advanced: 'bg-red-100 text-red-800',
+};
+
+const difficultyIcons = {
+    beginner: '🟢',
+    intermediate: '🟡',
+    advanced: '🔴',
+};
+
 export default function ComponentPreview({ example }: ComponentPreviewProps) {
     return (
         <Card className='overflow-hidden hover:shadow-lg transition-shadow duration-300'>
@@ -59,7 +53,11 @@ export default function ComponentPreview({ example }: ComponentPreviewProps) {
                     <div className='flex-1'>
                         <div className='flex items-center gap-2 mb-2'>
                             <span className='text-lg'>
-                                {typeIcons[example.type]}
+                                {
+                                    typeIcons[
+                                        example.type as keyof typeof typeIcons
+                                    ]
+                                }
                             </span>
                             <h3 className='text-lg font-semibold text-gray-900'>
                                 {example.name}
@@ -76,7 +74,7 @@ export default function ComponentPreview({ example }: ComponentPreviewProps) {
                     {/* Type Badge */}
                     <span
                         className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                            typeColors[example.type]
+                            typeColors[example.type as keyof typeof typeColors]
                         }`}
                     >
                         {example.type === 'component'
@@ -92,6 +90,27 @@ export default function ComponentPreview({ example }: ComponentPreviewProps) {
                         }`}
                     >
                         {example.library}
+                    </span>
+
+                    {/* Difficulty Badge */}
+                    <span
+                        className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                            difficultyColors[
+                                example.difficulty as keyof typeof difficultyColors
+                            ] || 'bg-gray-100 text-gray-800'
+                        }`}
+                    >
+                        {
+                            difficultyIcons[
+                                example.difficulty as keyof typeof difficultyIcons
+                            ]
+                        }{' '}
+                        {example.difficulty}
+                    </span>
+
+                    {/* Version Badge */}
+                    <span className='inline-flex items-center px-2 py-1 rounded-full text-xs bg-purple-100 text-purple-800'>
+                        v{example.version}
                     </span>
 
                     {/* Tags */}
@@ -110,14 +129,57 @@ export default function ComponentPreview({ example }: ComponentPreviewProps) {
                     )}
                 </div>
 
+                {/* Dependencies */}
+                {example.dependencies && example.dependencies.length > 0 && (
+                    <div className='mb-4'>
+                        <div className='text-xs text-gray-500 mb-2'>
+                            Dependencies:
+                        </div>
+                        <div className='flex flex-wrap gap-1'>
+                            {example.dependencies.map((dep) => (
+                                <span
+                                    key={dep}
+                                    className='inline-flex items-center px-2 py-1 rounded text-xs bg-blue-50 text-blue-700 border border-blue-200'
+                                >
+                                    📦 {dep}
+                                </span>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
                 {/* Code Preview */}
                 <div className='mb-4'>
-                    <ComponentCode
-                        code={example.code}
-                        language={
+                    <CodeEditor
+                        className='w-full h-fit max-h-[480px]'
+                        lang={
                             example.type === 'component' ? 'jsx' : 'javascript'
                         }
-                    />
+                        title={example.name}
+                        duration={0}
+                        delay={0}
+                        writing={false}
+                        copyButton={true}
+                        cursor={false}
+                    >
+                        {example.code}
+                    </CodeEditor>
+                </div>
+
+                {/* Stats */}
+                <div className='flex items-center gap-4 mb-4 text-xs text-gray-500'>
+                    <div className='flex items-center gap-1'>
+                        <span>👁️</span>
+                        <span>{example.views} views</span>
+                    </div>
+                    <div className='flex items-center gap-1'>
+                        <span>❤️</span>
+                        <span>{example.likes} likes</span>
+                    </div>
+                    <div className='flex items-center gap-1'>
+                        <span>⬇️</span>
+                        <span>{example.downloads} downloads</span>
+                    </div>
                 </div>
 
                 {/* Actions */}

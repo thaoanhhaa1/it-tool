@@ -1,13 +1,14 @@
 import ComponentCode from '@/components/ComponentCode';
 import CopyButton from '@/components/CopyButton';
 import Navigation from '@/components/Navigation';
-import { codeExampleService, type CodeExample } from '@/services/apiService';
+import { codeExampleService } from '@/services/apiService';
+import { ICodeExampleDetail } from '@/types/codeExample/codeExample.interface';
 import { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
 // Async function để fetch code example từ API
-async function getCodeExample(id: string): Promise<CodeExample | null> {
+async function getCodeExample(id: string): Promise<ICodeExampleDetail | null> {
     try {
         const codeExample = await codeExampleService.getById(id);
         return codeExample;
@@ -58,7 +59,7 @@ export async function generateMetadata({
             locale: 'vi_VN',
         },
         alternates: {
-            canonical: `/code-library/${example._id}`,
+            canonical: `/code-library/${example.id}`,
         },
     };
 }
@@ -82,7 +83,7 @@ export default async function CodeDetailPage({
         notFound();
     }
 
-    const typeColors = {
+    const typeColors: Record<string, string> = {
         component: 'bg-indigo-100 text-indigo-800',
         function: 'bg-emerald-100 text-emerald-800',
     };
@@ -99,7 +100,7 @@ export default async function CodeDetailPage({
         Utility: 'bg-green-100 text-green-800',
     };
 
-    const typeIcons = {
+    const typeIcons: Record<string, string> = {
         component: '⚛️',
         function: '🔧',
     };
@@ -172,17 +173,26 @@ export default async function CodeDetailPage({
                                 <div className='flex items-center gap-3'>
                                     <div className='w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center'>
                                         <span className='text-blue-600 font-medium text-sm'>
-                                            {example.author.username
-                                                .charAt(0)
-                                                .toUpperCase()}
+                                            {typeof example.author === 'string'
+                                                ? example.author
+                                                      .charAt(0)
+                                                      .toUpperCase()
+                                                : example.author.username
+                                                      .charAt(0)
+                                                      .toUpperCase()}
                                         </span>
                                     </div>
                                     <div>
                                         <p className='text-sm font-medium text-gray-900'>
-                                            {example.author.fullName}
+                                            {typeof example.author === 'string'
+                                                ? example.author
+                                                : example.author.fullName}
                                         </p>
                                         <p className='text-xs text-gray-500'>
-                                            @{example.author.username}
+                                            @
+                                            {typeof example.author === 'string'
+                                                ? example.author
+                                                : example.author.username}
                                         </p>
                                     </div>
                                 </div>
