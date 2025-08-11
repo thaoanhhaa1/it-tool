@@ -36,14 +36,14 @@ export async function generateMetadata({
 
     return {
         title: `${example.name} - ${example.library} ${
-            example.type === 'component' ? 'Component' : 'Function'
+            example.type.name === 'component' ? 'Component' : 'Function'
         } | Code Library`,
         description: `${example.description} Xem code example và cách sử dụng ${example.name} trong dự án React của bạn.`,
         keywords: [
             example.name,
-            example.library,
-            example.type,
-            ...example.tags,
+            example.library.name,
+            example.type.name,
+            ...example.tags.map((item) => item.name),
             'React',
             'JavaScript',
             'TypeScript',
@@ -52,7 +52,7 @@ export async function generateMetadata({
         ],
         openGraph: {
             title: `${example.name} - ${example.library} ${
-                example.type === 'component' ? 'Component' : 'Function'
+                example.type.name === 'component' ? 'Component' : 'Function'
             }`,
             description: example.description,
             type: 'article',
@@ -136,7 +136,7 @@ export default async function CodeDetailPage({
                             <div className='flex items-start justify-between mb-4'>
                                 <div className='flex items-center gap-3'>
                                     <span className='text-2xl'>
-                                        {typeIcons[example.type]}
+                                        {typeIcons[example.type.name]}
                                     </span>
                                     <div>
                                         <h1 className='text-2xl font-bold text-gray-900 mb-2'>
@@ -150,20 +150,21 @@ export default async function CodeDetailPage({
                                 <div className='flex gap-2'>
                                     <span
                                         className={`px-3 py-1 rounded-full text-sm font-medium ${
-                                            typeColors[example.type]
+                                            typeColors[example.type.name]
                                         }`}
                                     >
-                                        {example.type === 'component'
+                                        {example.type.name === 'component'
                                             ? 'Component'
                                             : 'Function'}
                                     </span>
                                     <span
                                         className={`px-3 py-1 rounded-full text-sm font-medium ${
-                                            libraryColors[example.library] ||
-                                            'bg-gray-100 text-gray-800'
+                                            libraryColors[
+                                                example.library.name
+                                            ] || 'bg-gray-100 text-gray-800'
                                         }`}
                                     >
-                                        {example.library}
+                                        {example.library.name}
                                     </span>
                                 </div>
                             </div>
@@ -173,26 +174,17 @@ export default async function CodeDetailPage({
                                 <div className='flex items-center gap-3'>
                                     <div className='w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center'>
                                         <span className='text-blue-600 font-medium text-sm'>
-                                            {typeof example.author === 'string'
-                                                ? example.author
-                                                      .charAt(0)
-                                                      .toUpperCase()
-                                                : example.author.username
-                                                      .charAt(0)
-                                                      .toUpperCase()}
+                                            {example.authorInfo.username
+                                                .charAt(0)
+                                                .toUpperCase()}
                                         </span>
                                     </div>
                                     <div>
                                         <p className='text-sm font-medium text-gray-900'>
-                                            {typeof example.author === 'string'
-                                                ? example.author
-                                                : example.author.fullName}
+                                            {example.authorInfo.fullName}
                                         </p>
                                         <p className='text-xs text-gray-500'>
-                                            @
-                                            {typeof example.author === 'string'
-                                                ? example.author
-                                                : example.author.username}
+                                            @{example.authorInfo.username}
                                         </p>
                                     </div>
                                 </div>
@@ -214,7 +206,7 @@ export default async function CodeDetailPage({
                                 <ComponentCode
                                     code={example.code}
                                     language={
-                                        example.type === 'component'
+                                        example.type.name === 'component'
                                             ? 'jsx'
                                             : 'javascript'
                                     }
@@ -236,7 +228,7 @@ export default async function CodeDetailPage({
                                         Loại
                                     </dt>
                                     <dd className='text-sm text-gray-900'>
-                                        {example.type === 'component'
+                                        {example.type.name === 'component'
                                             ? 'React Component'
                                             : 'JavaScript Function'}
                                     </dd>
@@ -246,7 +238,7 @@ export default async function CodeDetailPage({
                                         Thư viện
                                     </dt>
                                     <dd className='text-sm text-gray-900'>
-                                        {example.library}
+                                        {example.library.name}
                                     </dd>
                                 </div>
                                 <div>
@@ -272,10 +264,10 @@ export default async function CodeDetailPage({
                                     <dd className='flex flex-wrap gap-1 mt-1'>
                                         {example.tags.map((tag) => (
                                             <span
-                                                key={tag}
+                                                key={tag.id}
                                                 className='px-2 py-1 bg-gray-100 text-gray-600 rounded text-xs'
                                             >
-                                                #{tag}
+                                                #{tag.name}
                                             </span>
                                         ))}
                                     </dd>
@@ -314,7 +306,7 @@ export default async function CodeDetailPage({
                                 Cài đặt Dependencies
                             </h3>
                             <div className='space-y-4'>
-                                {example.library === 'MUI' && (
+                                {example.library.name === 'MUI' && (
                                     <div>
                                         <ComponentCode
                                             code='npm install @mui/material @emotion/react @emotion/styled'
@@ -322,7 +314,7 @@ export default async function CodeDetailPage({
                                         />
                                     </div>
                                 )}
-                                {example.library === 'Ant Design' && (
+                                {example.library.name === 'Ant Design' && (
                                     <div>
                                         <ComponentCode
                                             code='npm install antd'
@@ -330,7 +322,7 @@ export default async function CodeDetailPage({
                                         />
                                     </div>
                                 )}
-                                {example.library === 'Chakra UI' && (
+                                {example.library.name === 'Chakra UI' && (
                                     <div>
                                         <ComponentCode
                                             code='npm install @chakra-ui/react @emotion/react @emotion/styled framer-motion'
@@ -338,7 +330,7 @@ export default async function CodeDetailPage({
                                         />
                                     </div>
                                 )}
-                                {example.library === 'Headless UI' && (
+                                {example.library.name === 'Headless UI' && (
                                     <div>
                                         <ComponentCode
                                             code='npm install @headlessui/react'
@@ -346,10 +338,10 @@ export default async function CodeDetailPage({
                                         />
                                     </div>
                                 )}
-                                {(example.library === 'JavaScript' ||
-                                    example.library === 'TypeScript' ||
-                                    example.library === 'React' ||
-                                    example.library === 'Utility') && (
+                                {(example.library.name === 'JavaScript' ||
+                                    example.library.name === 'TypeScript' ||
+                                    example.library.name === 'React' ||
+                                    example.library.name === 'Utility') && (
                                     <p className='text-sm text-gray-600'>
                                         Không cần cài đặt thêm dependencies.
                                         Code này sử dụng JavaScript/TypeScript

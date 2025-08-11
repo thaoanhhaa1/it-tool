@@ -1,42 +1,64 @@
-import { IUser } from '../../models/User';
+interface Type {
+    id: string;
+    name: string;
+}
+
+interface Library {
+    id: string;
+    name: string;
+}
+
+interface TagsItem {
+    id: string;
+    name: string;
+}
+
+interface AuthorInfo {
+    id: string;
+    username: string;
+    email: string;
+    fullName: string;
+    avatar: null;
+    bio: string;
+    github: string;
+    linkedin: string;
+}
 
 export interface ICodeExample {
-    likedBy: unknown[];
     name: string;
     description: string;
-    type: string;
-    library: string;
-    tags: string[];
+    type: Type;
+    library: Library;
+    tags: TagsItem[];
     code: string;
     author: string;
-    likes: number;
-    views: number;
-    downloads: number;
-    isPublic: boolean;
+    authorInfo: AuthorInfo;
     difficulty: string;
-    version: string;
     dependencies: string[];
+    isPublic: boolean;
+    views: number;
+    likes: number;
+    likedBy: unknown[];
     createdAt: string;
     updatedAt: string;
     id: string;
 }
 
 export interface ICodeExampleDetail {
-    likedBy: unknown[];
     name: string;
     description: string;
-    type: string;
-    library: string;
-    tags: string[];
+    type: Type;
+    library: Library;
+    tags: TagsItem[];
     code: string;
-    author: string | IUser;
-    likes: number;
-    views: number;
-    downloads: number;
-    isPublic: boolean;
+    author: string;
+    authorInfo: AuthorInfo;
     difficulty: string;
-    version: string;
     dependencies: string[];
+    isPublic: boolean;
+    views: number;
+    likes: number;
+    likedBy: unknown[];
     createdAt: string;
     updatedAt: string;
     id: string;

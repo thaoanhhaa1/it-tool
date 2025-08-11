@@ -134,13 +134,13 @@ export default function CodeLibrary() {
                 .toLowerCase()
                 .includes(searchTerm.toLowerCase()) ||
             example.tags.some((tag) =>
-                tag.toLowerCase().includes(searchTerm.toLowerCase()),
+                tag.name.toLowerCase().includes(searchTerm.toLowerCase()),
             );
 
         const matchesLibrary =
-            !selectedLibrary || example.library === selectedLibrary;
+            !selectedLibrary || example.library.name === selectedLibrary;
         const matchesType =
-            selectedType === 'all' || example.type === selectedType;
+            selectedType === 'all' || example.type.name === selectedType;
         // const matchesCategory =
         //     !selectedCategory || example.category === selectedCategory;
 
@@ -267,8 +267,8 @@ export default function CodeLibrary() {
                         >
                             <option value=''>Tất cả thư viện</option>
                             {uniqueLibraries.map((library) => (
-                                <option key={library} value={library}>
-                                    {library}
+                                <option key={library.id} value={library.id}>
+                                    {library.name}
                                 </option>
                             ))}
                         </select>

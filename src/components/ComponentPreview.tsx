@@ -1,6 +1,5 @@
 'use client';
 
-import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { ICodeExample } from '@/types/codeExample/codeExample.interface';
 import Link from 'next/link';
@@ -55,7 +54,8 @@ export default function ComponentPreview({ example }: ComponentPreviewProps) {
                             <span className='text-lg'>
                                 {
                                     typeIcons[
-                                        example.type as keyof typeof typeIcons
+                                        example.type
+                                            .name as keyof typeof typeIcons
                                     ]
                                 }
                             </span>
@@ -74,10 +74,12 @@ export default function ComponentPreview({ example }: ComponentPreviewProps) {
                     {/* Type Badge */}
                     <span
                         className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                            typeColors[example.type as keyof typeof typeColors]
+                            typeColors[
+                                example.type.name as keyof typeof typeColors
+                            ]
                         }`}
                     >
-                        {example.type === 'component'
+                        {example.type.name === 'component'
                             ? 'Component'
                             : 'Function'}
                     </span>
@@ -85,11 +87,11 @@ export default function ComponentPreview({ example }: ComponentPreviewProps) {
                     {/* Library Badge */}
                     <span
                         className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                            libraryColors[example.library] ||
+                            libraryColors[example.library.name] ||
                             'bg-gray-100 text-gray-800'
                         }`}
                     >
-                        {example.library}
+                        {example.library.name}
                     </span>
 
                     {/* Difficulty Badge */}
@@ -108,18 +110,13 @@ export default function ComponentPreview({ example }: ComponentPreviewProps) {
                         {example.difficulty}
                     </span>
 
-                    {/* Version Badge */}
-                    <span className='inline-flex items-center px-2 py-1 rounded-full text-xs bg-purple-100 text-purple-800'>
-                        v{example.version}
-                    </span>
-
                     {/* Tags */}
                     {example.tags.slice(0, 3).map((tag) => (
                         <span
-                            key={tag}
+                            key={tag.id}
                             className='inline-flex items-center px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-600'
                         >
-                            #{tag}
+                            #{tag.name}
                         </span>
                     ))}
                     {example.tags.length > 3 && (
@@ -153,7 +150,9 @@ export default function ComponentPreview({ example }: ComponentPreviewProps) {
                     <CodeEditor
                         className='w-full h-fit max-h-[480px]'
                         lang={
-                            example.type === 'component' ? 'jsx' : 'javascript'
+                            example.type.name === 'component'
+                                ? 'jsx'
+                                : 'javascript'
                         }
                         title={example.name}
                         duration={0}
@@ -176,31 +175,16 @@ export default function ComponentPreview({ example }: ComponentPreviewProps) {
                         <span>❤️</span>
                         <span>{example.likes} likes</span>
                     </div>
-                    <div className='flex items-center gap-1'>
-                        <span>⬇️</span>
-                        <span>{example.downloads} downloads</span>
-                    </div>
                 </div>
 
                 {/* Actions */}
-                <div className='flex justify-between items-center pt-4 border-t border-gray-100'>
+                <div className='flex justify-end items-center pt-4 border-t border-gray-100'>
                     <Link
                         href={`/code-library/${example.id}`}
                         className='text-blue-600 hover:text-blue-800 text-sm font-medium'
                     >
                         Xem chi tiết →
                     </Link>
-
-                    <Button
-                        variant='outline'
-                        size='sm'
-                        onClick={() => {
-                            navigator.clipboard.writeText(example.code);
-                            // You might want to show a toast notification here
-                        }}
-                    >
-                        Copy Code
-                    </Button>
                 </div>
             </div>
         </Card>
