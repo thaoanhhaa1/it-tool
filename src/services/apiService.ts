@@ -240,3 +240,82 @@ export const statsService = {
         return api.get(`/api/stats/trending?period=${period}`);
     },
 };
+
+// Type interface
+export interface Type {
+    id: string;
+    code: string;
+    name: string;
+    description: string;
+    isActive: boolean;
+    usageCount: number;
+    createdAt: string;
+    updatedAt: string;
+}
+
+// Library interface
+export interface Library {
+    id: string;
+    name: string;
+    description: string;
+    version: string;
+    website: string;
+    documentation: string;
+    isActive: boolean;
+    usageCount: number;
+    tags: string[];
+    createdAt: string;
+    updatedAt: string;
+}
+
+// Type service
+export const typeService = {
+    getActive: async (): Promise<Type[]> => {
+        try {
+            const response = await api.get<Type[]>('/api/types/active');
+            return response;
+        } catch (error) {
+            console.error('Error fetching active types:', error);
+            throw error;
+        }
+    },
+};
+
+// Library service
+export const libraryService = {
+    getActive: async (): Promise<Library[]> => {
+        try {
+            const response = await api.get<Library[]>('/api/libraries/active');
+            return response;
+        } catch (error) {
+            console.error('Error fetching active libraries:', error);
+            throw error;
+        }
+    },
+};
+
+// Tag interface
+export interface Tag {
+    id: string;
+    name: string;
+    description: string;
+    isActive: boolean;
+    usageCount: number;
+    category: string;
+    relatedTags: string[];
+    createdAt: string;
+    updatedAt: string;
+}
+
+// Tag service
+export const tagService = {
+    getActive: async (): Promise<Tag[]> => {
+        try {
+            const response = await api.get<Tag[]>('/api/tags/active');
+            return response;
+        } catch (error) {
+            console.error('Error fetching active tags:', error);
+            throw error;
+        }
+    },
+};

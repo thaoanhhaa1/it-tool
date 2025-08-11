@@ -1,42 +1,32 @@
 'use client';
 
-import { categoryService, codeExampleService } from '@/services/apiService';
+import {
+    categoryService,
+    codeExampleService,
+    Library,
+    libraryService,
+    Tag,
+    tagService,
+    Type,
+    typeService,
+} from '@/services/apiService';
 import { ICategory } from '@/types/category/category.interface';
 import { ICodeExample } from '@/types/codeExample/codeExample.interface';
 import { useEffect, useState } from 'react';
 import ComponentPreview from './ComponentPreview';
 
-// Types for component interface
-interface CodeExample {
-    id: string;
-    name: string;
-    description: string;
-    type: 'component' | 'function';
-    library: string;
-    tags: string[];
-    code: string;
-    author?: {
-        username: string;
-        fullName: string;
-    };
-    likes?: number;
-    views?: number;
-    createdAt?: string;
-    category?: string;
-    difficulty?: 'beginner' | 'intermediate' | 'advanced';
-}
-
 export default function CodeLibrary() {
     const [codeExamples, setCodeExamples] = useState<ICodeExample[]>([]);
-    const [categories, setCategories] = useState<ICategory[]>([]);
+    const [, setCategories] = useState<ICategory[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedLibrary, setSelectedLibrary] = useState<string>('');
-    const [selectedType, setSelectedType] = useState<
-        'all' | 'component' | 'function'
-    >('all');
+    const [selectedType, setSelectedType] = useState<string>('all');
+    const [types, setTypes] = useState<Type[]>([]);
+    const [libraries, setLibraries] = useState<Library[]>([]);
+    const [tags, setTags] = useState<Tag[]>([]);
     const [selectedCategory, setSelectedCategory] = useState<string>('');
 
     // Fetch data from APIs using services
@@ -46,18 +36,26 @@ export default function CodeLibrary() {
                 setLoading(true);
                 setError(null);
 
-                // Fetch categories and code examples in parallel using services
-                const [categoriesData, codeExamplesData] = await Promise.all([
+                // Fetch categories, code examples, types, libraries and tags in parallel using services
+                const [
+                    categoriesData,
+                    codeExamplesData,
+                    typesData,
+                    librariesData,
+                    tagsData,
+                ] = await Promise.all([
                     categoryService.getAll(),
                     codeExampleService.getAll({ limit: 50 }),
+                    typeService.getActive(),
+                    libraryService.getActive(),
+                    tagService.getActive(),
                 ]);
-                console.log(
-                    '🚀 ~ fetchData ~ codeExamplesData:',
-                    codeExamplesData,
-                );
 
                 setCategories(categoriesData || []);
                 setCodeExamples(codeExamplesData || []);
+                setTypes(typesData || []);
+                setLibraries(librariesData || []);
+                setTags(tagsData || []);
             } catch (err) {
                 console.error('Error fetching data:', err);
                 setError(
@@ -74,7 +72,7 @@ export default function CodeLibrary() {
     // Handle search and filter updates
     const handleSearch = async (newFilters: {
         search?: string;
-        type?: 'component' | 'function';
+        type?: string;
         library?: string;
         category?: string;
     }) => {
@@ -103,10 +101,7 @@ export default function CodeLibrary() {
         const timeoutId = setTimeout(() => {
             const filters = {
                 search: searchTerm,
-                type:
-                    selectedType !== 'all'
-                        ? (selectedType as 'component' | 'function')
-                        : undefined,
+                type: selectedType !== 'all' ? selectedType : undefined,
                 library: selectedLibrary || undefined,
                 category: selectedCategory || undefined,
             };
@@ -140,17 +135,15 @@ export default function CodeLibrary() {
         const matchesLibrary =
             !selectedLibrary || example.library.name === selectedLibrary;
         const matchesType =
-            selectedType === 'all' || example.type.name === selectedType;
+            selectedType === 'all' || example.type.code === selectedType;
         // const matchesCategory =
         //     !selectedCategory || example.category === selectedCategory;
 
         return matchesSearch && matchesLibrary && matchesType;
     });
 
-    // Get unique libraries for filter
-    const uniqueLibraries = Array.from(
-        new Set(codeExamples.map((example) => example.library)),
-    );
+    // Get unique libraries for filter - use libraries from API instead of extracting from code examples
+    const uniqueLibraries = libraries.map((lib) => lib.name);
 
     const handleRetry = () => {
         setError(null);
@@ -239,19 +232,15 @@ export default function CodeLibrary() {
                         </label>
                         <select
                             value={selectedType}
-                            onChange={(e) =>
-                                setSelectedType(
-                                    e.target.value as
-                                        | 'all'
-                                        | 'component'
-                                        | 'function',
-                                )
-                            }
+                            onChange={(e) => setSelectedType(e.target.value)}
                             className='px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent'
                         >
                             <option value='all'>Tất cả</option>
-                            <option value='component'>Components</option>
-                            <option value='function'>Functions</option>
+                            {types.map((type) => (
+                                <option key={type.id} value={type.code}>
+                                    {type.name}
+                                </option>
+                            ))}
                         </select>
                     </div>
 
@@ -266,9 +255,9 @@ export default function CodeLibrary() {
                             className='px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent'
                         >
                             <option value=''>Tất cả thư viện</option>
-                            {uniqueLibraries.map((library) => (
-                                <option key={library.id} value={library.id}>
-                                    {library.name}
+                            {uniqueLibraries.map((libraryName) => (
+                                <option key={libraryName} value={libraryName}>
+                                    {libraryName}
                                 </option>
                             ))}
                         </select>
@@ -287,9 +276,9 @@ export default function CodeLibrary() {
                             className='px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent'
                         >
                             <option value=''>Tất cả danh mục</option>
-                            {categories.map((category) => (
-                                <option key={category.id} value={category.id}>
-                                    {category.name}
+                            {tags.map((tag) => (
+                                <option key={tag.id} value={tag.id}>
+                                    {tag.name}
                                 </option>
                             ))}
                         </select>
@@ -300,9 +289,8 @@ export default function CodeLibrary() {
                 <div className='flex flex-wrap gap-2'>
                     {selectedType !== 'all' && (
                         <span className='inline-flex items-center px-3 py-1 rounded-full text-sm bg-blue-100 text-blue-800'>
-                            {selectedType === 'component'
-                                ? 'Components'
-                                : 'Functions'}
+                            {types.find((type) => type.code === selectedType)
+                                ?.name || selectedType}
                             <button
                                 onClick={() => setSelectedType('all')}
                                 className='ml-2 text-blue-600 hover:text-blue-800'
@@ -313,7 +301,9 @@ export default function CodeLibrary() {
                     )}
                     {selectedLibrary && (
                         <span className='inline-flex items-center px-3 py-1 rounded-full text-sm bg-green-100 text-green-800'>
-                            {selectedLibrary}
+                            {libraries.find(
+                                (lib) => lib.name === selectedLibrary,
+                            )?.name || selectedLibrary}
                             <button
                                 onClick={() => setSelectedLibrary('')}
                                 className='ml-2 text-green-600 hover:text-green-800'
@@ -325,9 +315,8 @@ export default function CodeLibrary() {
                     {selectedCategory && (
                         <span className='inline-flex items-center px-3 py-1 rounded-full text-sm bg-purple-100 text-purple-800'>
                             {
-                                categories.find(
-                                    (cat) => cat.id === selectedCategory,
-                                )?.name
+                                tags.find((tag) => tag.id === selectedCategory)
+                                    ?.name
                             }
                             <button
                                 onClick={() => setSelectedCategory('')}
@@ -386,4 +375,4 @@ export default function CodeLibrary() {
 }
 
 // Export types for use in other components
-export type { CodeExample };
+export type { ICodeExample };

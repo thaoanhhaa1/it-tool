@@ -1,5 +1,6 @@
 interface Type {
     id: string;
+    code: string;
     name: string;
 }
 
