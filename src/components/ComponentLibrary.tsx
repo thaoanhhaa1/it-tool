@@ -106,15 +106,7 @@ export default function CodeLibrary() {
                 category: selectedCategory || undefined,
             };
 
-            // Only search if there are actual filters applied
-            if (
-                searchTerm ||
-                selectedType !== 'all' ||
-                selectedLibrary ||
-                selectedCategory
-            ) {
-                handleSearch(filters);
-            }
+            handleSearch(filters);
         }, 500);
 
         return () => clearTimeout(timeoutId);
@@ -141,9 +133,6 @@ export default function CodeLibrary() {
 
         return matchesSearch && matchesLibrary && matchesType;
     });
-
-    // Get unique libraries for filter - use libraries from API instead of extracting from code examples
-    const uniqueLibraries = libraries.map((lib) => lib.name);
 
     const handleRetry = () => {
         setError(null);
@@ -237,7 +226,7 @@ export default function CodeLibrary() {
                         >
                             <option value='all'>Tất cả</option>
                             {types.map((type) => (
-                                <option key={type.id} value={type.code}>
+                                <option key={type.id} value={type.id}>
                                     {type.name}
                                 </option>
                             ))}
@@ -255,9 +244,9 @@ export default function CodeLibrary() {
                             className='px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent'
                         >
                             <option value=''>Tất cả thư viện</option>
-                            {uniqueLibraries.map((libraryName) => (
-                                <option key={libraryName} value={libraryName}>
-                                    {libraryName}
+                            {libraries.map((library) => (
+                                <option key={library.id} value={library.id}>
+                                    {library.name}
                                 </option>
                             ))}
                         </select>
@@ -289,7 +278,7 @@ export default function CodeLibrary() {
                 <div className='flex flex-wrap gap-2'>
                     {selectedType !== 'all' && (
                         <span className='inline-flex items-center px-3 py-1 rounded-full text-sm bg-blue-100 text-blue-800'>
-                            {types.find((type) => type.code === selectedType)
+                            {types.find((type) => type.id === selectedType)
                                 ?.name || selectedType}
                             <button
                                 onClick={() => setSelectedType('all')}
@@ -301,9 +290,8 @@ export default function CodeLibrary() {
                     )}
                     {selectedLibrary && (
                         <span className='inline-flex items-center px-3 py-1 rounded-full text-sm bg-green-100 text-green-800'>
-                            {libraries.find(
-                                (lib) => lib.name === selectedLibrary,
-                            )?.name || selectedLibrary}
+                            {libraries.find((lib) => lib.id === selectedLibrary)
+                                ?.name || selectedLibrary}
                             <button
                                 onClick={() => setSelectedLibrary('')}
                                 className='ml-2 text-green-600 hover:text-green-800'
