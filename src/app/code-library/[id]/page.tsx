@@ -7,7 +7,7 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
-// Async function để fetch code example từ API
+// Async function để fetch code example từ API (không gọi incrementView)
 async function getCodeExample(id: string): Promise<ICodeExampleDetail | null> {
     try {
         const codeExample = await codeExampleService.getById(id);
@@ -82,6 +82,8 @@ export default async function CodeDetailPage({
     if (!example) {
         notFound();
     }
+
+    codeExampleService.incrementView(id).finally();
 
     const typeColors: Record<string, string> = {
         component: 'bg-indigo-100 text-indigo-800',
