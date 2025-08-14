@@ -21,8 +21,8 @@ type TypeCase =
     | 'UPPER_CASE';
 
 export interface ConvertOptions {
-    entityName?: string; // Make optional
-    operationName?: string; // Make optional
+    entityName?: string;
+    operationName?: string;
     isQuery?: boolean;
     isMutation?: boolean;
     isInfiniteQuery?: boolean;
@@ -54,7 +54,6 @@ export class CurlConverter {
     ): string {
         if (fromCase === toCase) return str;
 
-        // First, convert to a normalized format (words array)
         let words: string[] = [];
 
         switch (fromCase) {
@@ -85,7 +84,6 @@ export class CurlConverter {
                 words = [str.toLowerCase()];
         }
 
-        // Convert to target case
         switch (toCase) {
             case 'camelCase':
                 return (
@@ -149,46 +147,35 @@ export class CurlConverter {
     }
 
     private static parseCurl(curlCommand: string): CurlObject {
-        // Normalize multiline curl command
         const normalizedCurl = curlCommand
-            .replace(/\\\n/g, ' ')
-            .replace(/\\\s+/g, ' ')
+            .replace(/\\\s*\n\s*/g, ' ')
             .replace(/\s+/g, ' ')
             .trim();
 
-        // Cập nhật regex để hỗ trợ nhiều format URL khác nhau
         const urlMatch =
-            // Format: curl --location --request PUT 'https://...'
             normalizedCurl.match(
                 /curl\s+(?:--location\s+)?(?:--request\s+\w+\s+)?['"]([^'"]+)['"]/,
             ) ||
-            // Format: curl 'https://...' -X 'PUT'
             normalizedCurl.match(/curl\s+['"]([^'"]+)['"]/) ||
-            // Format: curl --location 'https://...'
             normalizedCurl.match(/curl\s+(?:--location\s+)?['"]([^'"]+)['"]/) ||
-            // Format: curl -X PUT 'https://...'
-            normalizedCurl.match(/curl\s+(?:-X\s+\w+\s+)?['"]?([^'"?\s]+)/) ||
-            // Fallback format
             normalizedCurl.match(
-                /curl\s+(?:--location\s+)?(?:-X\s+\w+\s+)?['"]?([^'"?\s]+)/,
-            );
+                /curl\s+(?:-X\s+['"]?\w+['"]?\s+)?['"]([^'"]+)['"]/,
+            ) ||
+            normalizedCurl.match(/curl\s+(?:[^'"]*\s+)?['"]([^'"]+)['"]/);
 
-        // Cập nhật regex để hỗ trợ cả --request và -X
         const methodMatch =
-            normalizedCurl.match(/--request\s+(\w+)/) ||
+            normalizedCurl.match(/--request\s+['"]?(\w+)['"]?/) ||
             normalizedCurl.match(/-X\s+['"]?(\w+)['"]?/);
 
-        // Cập nhật regex để hỗ trợ cả --header và -H
         const headerMatches = normalizedCurl.matchAll(
             /(?:--header|-H)\s+['"]([^'"]+)['"]/g,
         );
 
-        // Cập nhật regex để hỗ trợ cả --data, --data-raw và -d
         const dataMatch =
             normalizedCurl.match(/(?:--data-raw|--data|-d)\s+'([^']+)'/) ||
             normalizedCurl.match(/(?:--data-raw|--data|-d)\s+"([^"]+)"/);
 
-        const paramMatch = normalizedCurl.match(/\?([^'"?\s]+)/);
+        const paramMatch = normalizedCurl.match(/\?([^'"]+)/);
 
         const headers: Record<string, string> = {};
         for (const match of headerMatches) {
@@ -221,7 +208,6 @@ export class CurlConverter {
             }
         }
 
-        // Cập nhật logic xác định method - nếu có data thì mặc định POST
         const hasDataFlag =
             normalizedCurl.includes('--data-raw') ||
             normalizedCurl.includes('--data ') ||
@@ -236,13 +222,16 @@ export class CurlConverter {
             params: Object.keys(params).length > 0 ? params : undefined,
         };
 
+        if (!result.url) {
+            console.warn('Warning: Could not extract URL from curl command');
+            console.warn('Normalized curl:', normalizedCurl);
+            console.warn('URL match result:', urlMatch);
+        }
+
         return result;
     }
 
     private static inferZodType(value: unknown, key?: string): ZodType {
-        if (typeof value === 'string') {
-            return key?.toLowerCase().includes('date') ? 'date' : 'string';
-        }
         if (typeof value === 'number') {
             return 'number';
         }
@@ -255,6 +244,38 @@ export class CurlConverter {
         if (typeof value === 'object' && value !== null) {
             return 'object';
         }
+        if (typeof value === 'string') {
+            if (key?.toLowerCase().includes('date')) {
+                return 'date';
+            }
+
+            if (!isNaN(Number(value)) && value.trim() !== '') {
+                return 'number';
+            }
+
+            if (
+                value.toLowerCase() === 'true' ||
+                value.toLowerCase() === 'false'
+            ) {
+                return 'boolean';
+            }
+
+            if (
+                (value.startsWith('[') && value.endsWith(']')) ||
+                (value.startsWith('{') && value.endsWith('}'))
+            ) {
+                try {
+                    const parsed = JSON.parse(value);
+                    if (Array.isArray(parsed)) {
+                        return 'array';
+                    }
+                    if (typeof parsed === 'object' && parsed !== null) {
+                        return 'object';
+                    }
+                } catch {}
+            }
+            return 'string';
+        }
         return 'unknown';
     }
 
@@ -264,7 +285,6 @@ export class CurlConverter {
         targetTypeCase?: TypeCase,
     ): SchemaField[] {
         return Object.entries(obj).map(([key, value]) => {
-            // Convert field name if type case conversion is specified
             const convertedKey =
                 sourceTypeCase &&
                 targetTypeCase &&
@@ -308,7 +328,10 @@ export class CurlConverter {
         });
     }
 
-    private static generateZodSchema(fields: SchemaField[]): string {
+    private static generateZodSchema(
+        fields: SchemaField[],
+        isParams: boolean = false,
+    ): string {
         const generateFieldType = (field: SchemaField): string => {
             let zodType: string;
 
@@ -329,6 +352,7 @@ export class CurlConverter {
                     if (field.arrayType === 'object' && field.objectFields) {
                         const objectSchema = this.generateZodSchema(
                             field.objectFields,
+                            isParams,
                         );
                         zodType = `z.array(${objectSchema})`;
                     } else {
@@ -348,13 +372,20 @@ export class CurlConverter {
                     break;
                 case 'object':
                     if (field.objectFields) {
-                        zodType = this.generateZodSchema(field.objectFields);
+                        zodType = this.generateZodSchema(
+                            field.objectFields,
+                            isParams,
+                        );
                     } else {
                         zodType = 'z.record(z.unknown())';
                     }
                     break;
                 default:
                     zodType = 'z.unknown()';
+            }
+
+            if (isParams) {
+                return `${zodType}.optional()`;
             }
 
             return field.optional ? `${zodType}.optional()` : zodType;
@@ -372,14 +403,14 @@ export class CurlConverter {
         schemaName: string,
         sourceTypeCase?: TypeCase,
         targetTypeCase?: TypeCase,
+        isParams: boolean = false,
     ): string {
-        // Không cần convert object keys ở đây vì sẽ convert trong analyzeObjectStructure
         const fields = this.analyzeObjectStructure(
             data as Record<string, unknown>,
             sourceTypeCase,
             targetTypeCase,
         );
-        const zodSchema = this.generateZodSchema(fields);
+        const zodSchema = this.generateZodSchema(fields, isParams);
 
         return `const ${schemaName}Schema = ${zodSchema};\n\nexport type ${
             schemaName.charAt(0).toUpperCase() + schemaName.slice(1)
@@ -397,11 +428,9 @@ export class CurlConverter {
             ? (responseData[0] as Record<string, unknown>)
             : (responseData as Record<string, unknown>);
 
-        // Không convert keys ở đây vì sẽ convert trong generateInterfaceField
-
         if (!dataToAnalyze || typeof dataToAnalyze !== 'object') {
             return `export interface ${interfaceName} {
-      // Unable to generate interface from provided response data
+      
     }`;
         }
 
@@ -409,7 +438,6 @@ export class CurlConverter {
             key: string,
             value: unknown,
         ): string => {
-            // Apply type case conversion to field name
             const convertedKey =
                 sourceTypeCase &&
                 targetTypeCase &&
@@ -438,7 +466,6 @@ export class CurlConverter {
                 }
                 const firstItem = value[0];
                 if (typeof firstItem === 'object' && firstItem !== null) {
-                    // Apply type case conversion to nested interface name
                     const convertedKeyPascal =
                         sourceTypeCase &&
                         targetTypeCase &&
@@ -457,7 +484,6 @@ export class CurlConverter {
                 return `  ${convertedKey}${optionalSuffix}: ${itemType}[];`;
             }
             if (typeof value === 'object' && value !== null) {
-                // Apply type case conversion to nested interface name
                 const convertedKeyPascal =
                     sourceTypeCase &&
                     targetTypeCase &&
@@ -484,7 +510,6 @@ export class CurlConverter {
                     typeof value[0] === 'object' &&
                     value[0] !== null
                 ) {
-                    // Apply type case conversion to nested interface name
                     const convertedKeyPascal =
                         sourceTypeCase &&
                         targetTypeCase &&
@@ -511,7 +536,6 @@ export class CurlConverter {
                         nestedInterfaceName,
                     );
                 } else if (typeof value === 'object' && value !== null) {
-                    // Apply type case conversion to nested interface name
                     const convertedKeyPascal =
                         sourceTypeCase &&
                         targetTypeCase &&
@@ -569,7 +593,6 @@ export class CurlConverter {
                 .split('/')
                 .filter((segment) => segment.length > 0);
 
-            // Remove common prefixes like 'api', 'v1', 'v2', etc.
             const filteredSegments = pathSegments.filter(
                 (segment) =>
                     !['api', 'v1', 'v2', 'v3'].includes(segment.toLowerCase()),
@@ -583,17 +606,14 @@ export class CurlConverter {
                     filteredSegments[filteredSegments.length - 1];
 
                 if (this.isOperationSegment(lastSegment)) {
-                    // Use the second-to-last segment as entity name
                     entityName =
                         filteredSegments.length > 1
                             ? filteredSegments[filteredSegments.length - 2]
                             : filteredSegments[0];
 
-                    // Use the last segment as operation name
                     operationName =
                         this.extractOperationFromSegment(lastSegment);
                 } else {
-                    // Use the last segment as entity name
                     entityName = lastSegment;
                     operationName = this.inferOperationName(
                         method,
@@ -603,7 +623,6 @@ export class CurlConverter {
                 }
             }
 
-            // Convert to camelCase
             entityName = this.toCamelCase(entityName);
             operationName = this.toCamelCase(operationName);
 
@@ -644,17 +663,15 @@ export class CurlConverter {
     }
 
     private static extractOperationFromSegment(segment: string): string {
-        // Convert segments like 'get-list-form-request' to camelCase
         return this.toCamelCase(segment);
     }
 
     private static toCamelCase(str: string): string {
-        // Handle different separators: dash, underscore, space
         return str
             .replace(/[-_\s]+(.)?/g, (_, char) =>
                 char ? char.toUpperCase() : '',
             )
-            .replace(/^[A-Z]/, (char) => char.toLowerCase()); // Ensure first letter is lowercase
+            .replace(/^[A-Z]/, (char) => char.toLowerCase());
     }
 
     private static toPascalCase(str: string): string {
@@ -719,7 +736,6 @@ export class CurlConverter {
     }
 
     private static sanitizeName(name: string): string {
-        // Remove special characters first, then convert to camelCase
         const cleaned = name.replace(/[^a-zA-Z0-9\-_\s]/g, '');
         return this.toCamelCase(cleaned);
     }
@@ -733,10 +749,8 @@ export class CurlConverter {
         const { isInfiniteQuery } = options;
         const hasSchema = Boolean(curlObj.params || curlObj.body);
 
-        // Use camelCase for schema name
         const schemaName = `${operationName}ParamsSchema`;
 
-        // Use camelCase for service name
         const serviceName = `${entityName}${this.toPascalCase(operationName)}`;
 
         if (isInfiniteQuery) {
@@ -781,10 +795,8 @@ export class CurlConverter {
     ): string {
         const hasBody = Boolean(curlObj.body);
 
-        // Use camelCase for schema name
         const schemaName = hasBody ? `${operationName}BodySchema` : 'void';
 
-        // Use camelCase for service name
         const serviceName = `${this.toPascalCase(
             operationName,
         )}${this.toPascalCase(entityName)}`;
@@ -810,17 +822,13 @@ export class CurlConverter {
         const { responseType, responseData, isInfiniteQuery } = options;
         const { method, url } = curlObj;
 
-        // Parse URL và loại bỏ query parameters
         const urlObj = new URL(url);
-        const cleanPath = urlObj.pathname; // Chỉ lấy path, không có query params
-        const urlParts = cleanPath.split('/');
-        const endpoint = urlParts.slice(3).join('/'); // Loại bỏ protocol và domain
+        const cleanPath = urlObj.pathname;
 
         const hasParams = Boolean(curlObj.params);
         const hasBody = Boolean(curlObj.body);
         const hasConfig = true;
 
-        // Use camelCase for parameter types
         let paramType = '';
         if (hasParams || isInfiniteQuery) {
             const baseParamType = hasParams
@@ -847,8 +855,10 @@ export class CurlConverter {
         const axiosParams: string[] = [];
 
         if (method === 'GET' || method === 'DELETE') {
-            // Chỉ sử dụng clean endpoint không có query params
-            axiosParams.push(`\`\${BASE_PATH}/${endpoint}\``);
+            const fullUrl = `\`\${BASE_PATH}/${this.generateEndpoint(
+                cleanPath,
+            )}\``;
+            axiosParams.push(fullUrl);
             if (hasParams || isInfiniteQuery || hasConfig) {
                 axiosParams.push(
                     `{ ${
@@ -857,8 +867,10 @@ export class CurlConverter {
                 );
             }
         } else {
-            // Đối với POST, PUT, PATCH cũng sử dụng clean endpoint
-            axiosParams.push(`\`\${BASE_PATH}/${endpoint}\``);
+            const fullUrl = `\`\${BASE_PATH}/${this.generateEndpoint(
+                cleanPath,
+            )}\``;
+            axiosParams.push(fullUrl);
             if (hasBody) axiosParams.push('body');
             if (hasConfig) axiosParams.push('config');
         }
@@ -876,7 +888,10 @@ export class CurlConverter {
             ? `{ Data: [] as ${finalResponseType}, StatusCode: 0, Message: '', TotalRecord: 0 }`
             : `{ Data: {} as ${finalResponseType}, StatusCode: 0, Message: '' }`;
 
-        return `  ${operationName}: async (${parameters}) => {
+        return `const BASE_PATH = '${this.generateBasePath(cleanPath)}';
+
+const ${entityName}Api = {
+  ${operationName}: async (${parameters}) => {
                 try {
                   const response = await axiosClient.${axiosMethod}<BaseResponse<${finalResponseType}>>(${axiosParams.join(
             ', ',
@@ -885,7 +900,8 @@ export class CurlConverter {
                 } catch (error) {
                   return ${defaultReturn};
                 }
-              },`;
+              },
+}`;
     }
 
     private static generateTypes(
@@ -903,9 +919,8 @@ export class CurlConverter {
 
         let types = '';
 
-        // Generate params schema with camelCase naming
         if (curlObj.params || isInfiniteQuery) {
-            const schemaName = `${operationName}Params`; // camelCase
+            const schemaName = `${operationName}Params`;
 
             let paramsData = curlObj.params || {};
             if (isInfiniteQuery && !curlObj.params) {
@@ -920,12 +935,12 @@ export class CurlConverter {
                     schemaName,
                     sourceTypeCase,
                     targetTypeCase,
+                    true,
                 ) + '\n\n';
         }
 
-        // Generate body schema with camelCase naming
         if (curlObj.body) {
-            const schemaName = `${operationName}Body`; // camelCase
+            const schemaName = `${operationName}Body`;
             types +=
                 this.generateSchema(
                     curlObj.body,
@@ -935,7 +950,6 @@ export class CurlConverter {
                 ) + '\n\n';
         }
 
-        // Generate response interface with PascalCase naming
         if (responseData) {
             const interfaceName = `${this.toPascalCase(operationName)}Response`;
             types +=
@@ -952,11 +966,27 @@ export class CurlConverter {
             const baseType = responseType.replace('[]', '');
             types += `export interface ${baseType} {
               id: string;
-              // Define your ${baseType.toLowerCase()} properties here
+              
             }\n\n`;
         }
 
         return types;
+    }
+
+    private static generateBasePath(pathname: string): string {
+        const pathnameSplit = pathname.split('/');
+        const pathnameLength = pathnameSplit.length;
+
+        if (pathnameLength === 0) return '';
+        if (pathnameLength === 1 && !pathnameSplit.at(0)) return '';
+
+        return pathnameSplit.slice(0, -1).join('/');
+    }
+
+    private static generateEndpoint(pathname: string): string {
+        if (!pathname) return '';
+
+        return pathname.split('/').at(-1) || '';
     }
 
     public static convertCurlToObject(
@@ -965,7 +995,6 @@ export class CurlConverter {
     ): ConvertedResult {
         const curlObj = this.parseCurl(curlCommand);
 
-        // Extract entity and operation names from URL if not provided
         const extracted = this.extractEntityAndOperationFromUrl(
             curlObj.url,
             curlObj.method,
