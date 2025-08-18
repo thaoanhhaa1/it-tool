@@ -749,7 +749,9 @@ export class CurlConverter {
         const { isInfiniteQuery } = options;
         const hasSchema = Boolean(curlObj.params || curlObj.body);
 
-        const schemaName = `${operationName}ParamsSchema`;
+        const schemaName = `${operationName}${this.toPascalCase(
+            entityName,
+        )}ParamsSchema`;
 
         const serviceName = `${entityName}${this.toPascalCase(operationName)}`;
 
@@ -795,7 +797,11 @@ export class CurlConverter {
     ): string {
         const hasBody = Boolean(curlObj.body);
 
-        const schemaName = hasBody ? `${operationName}BodySchema` : 'void';
+        const schemaName = hasBody
+            ? `${this.toPascalCase(
+                  operationName,
+              )}${entityName[0].toUpperCase()}${entityName.slice(1)}Schema`
+            : 'void';
 
         const serviceName = `${this.toPascalCase(
             operationName,
@@ -804,13 +810,13 @@ export class CurlConverter {
         return `export const ${serviceName} = new MutationService${
             hasBody ? `<${schemaName}>` : '<void>'
         }({
-          fn: (${hasBody ? 'body' : ''}) => ${entityName}Api.${operationName}(${
+    fn: (${hasBody ? 'body' : ''}) => ${entityName}Api.${operationName}(${
             hasBody ? 'body' : ''
         }),
-          onSuccess: () => {
-            ${entityName}List.invalidate();
-          },
-        });`;
+    onSuccess: () => {
+        ${entityName}List.invalidate();
+    },
+});`;
     }
 
     private static generateApi(
@@ -832,7 +838,9 @@ export class CurlConverter {
         let paramType = '';
         if (hasParams || isInfiniteQuery) {
             const baseParamType = hasParams
-                ? `${this.toPascalCase(operationName)}ParamsSchema`
+                ? `${this.toPascalCase(operationName)}${this.toPascalCase(
+                      entityName,
+                  )}ParamsSchema`
                 : '{}';
 
             if (isInfiniteQuery) {
@@ -843,7 +851,9 @@ export class CurlConverter {
         }
 
         const bodyType = hasBody
-            ? `body: ${this.toPascalCase(operationName)}BodySchema`
+            ? `body: ${this.toPascalCase(operationName)}${this.toPascalCase(
+                  entityName,
+              )}Schema`
             : '';
         const configType = hasConfig ? `config?: AxiosRequestConfig` : '';
 
@@ -878,7 +888,9 @@ export class CurlConverter {
         let finalResponseType = 'unknown';
         if (responseData) {
             const isArray = Array.isArray(responseData);
-            const interfaceName = `${this.toPascalCase(operationName)}Response`;
+            const interfaceName = `${this.toPascalCase(
+                operationName,
+            )}${this.toPascalCase(entityName)}Response`;
             finalResponseType = isArray ? `${interfaceName}[]` : interfaceName;
         } else if (responseType) {
             finalResponseType = responseType;
@@ -888,26 +900,42 @@ export class CurlConverter {
             ? `{ Data: [] as ${finalResponseType}, StatusCode: 0, Message: '', TotalRecord: 0 }`
             : `{ Data: {} as ${finalResponseType}, StatusCode: 0, Message: '' }`;
 
+        if (method === 'GET')
+            return `const BASE_PATH = '${this.generateBasePath(cleanPath)}';
+
+const ${entityName}Api = {
+    ${operationName}: async (${parameters}) => {
+        try {
+            const response = await axiosClient.${axiosMethod}<BaseResponse<${finalResponseType}>>(${axiosParams.join(
+                ', ',
+            )});
+            return response.data;
+        } catch (error) {
+            return ${defaultReturn};
+        }
+    }
+}
+
+export default ${entityName}Api;`;
+
         return `const BASE_PATH = '${this.generateBasePath(cleanPath)}';
 
 const ${entityName}Api = {
-  ${operationName}: async (${parameters}) => {
-                try {
-                  const response = await axiosClient.${axiosMethod}<BaseResponse<${finalResponseType}>>(${axiosParams.join(
+    ${operationName}: async (${parameters}) => {
+            await axiosClient.${axiosMethod}<BaseResponse<${finalResponseType}>>(${axiosParams.join(
             ', ',
         )});
-                  return response.data;
-                } catch (error) {
-                  return ${defaultReturn};
-                }
-              },
-}`;
+    }
+}
+
+export default ${entityName}Api;`;
     }
 
     private static generateTypes(
         options: ConvertOptions,
         curlObj: CurlObject,
         operationName: string,
+        entityName: string,
     ): string {
         const {
             responseType,
@@ -920,7 +948,9 @@ const ${entityName}Api = {
         let types = '';
 
         if (curlObj.params || isInfiniteQuery) {
-            const schemaName = `${operationName}Params`;
+            const schemaName = `${operationName}${this.toPascalCase(
+                entityName,
+            )}Params`;
 
             let paramsData = curlObj.params || {};
             if (isInfiniteQuery && !curlObj.params) {
@@ -940,7 +970,9 @@ const ${entityName}Api = {
         }
 
         if (curlObj.body) {
-            const schemaName = `${operationName}Body`;
+            const schemaName = `${operationName}${entityName[0].toUpperCase()}${entityName.slice(
+                1,
+            )}`;
             types +=
                 this.generateSchema(
                     curlObj.body,
@@ -951,7 +983,9 @@ const ${entityName}Api = {
         }
 
         if (responseData) {
-            const interfaceName = `${this.toPascalCase(operationName)}Response`;
+            const interfaceName = `${this.toPascalCase(
+                operationName,
+            )}${this.toPascalCase(entityName)}Response`;
             types +=
                 this.generateResponseInterface(
                     responseData,
@@ -1006,7 +1040,12 @@ const ${entityName}Api = {
             api: this.generateApi(options, curlObj, entityName, operationName),
         };
 
-        const types = this.generateTypes(options, curlObj, operationName);
+        const types = this.generateTypes(
+            options,
+            curlObj,
+            operationName,
+            entityName,
+        );
         if (types.trim()) {
             result.type = types;
         }
