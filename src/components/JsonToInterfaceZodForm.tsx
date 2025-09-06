@@ -430,7 +430,7 @@ function convertValueToZodSchema(
     if (value === null) return 'z.null()';
     if (typeof value === 'boolean') return 'z.boolean()';
     if (typeof value === 'number') return 'z.number()';
-    if (typeof value === 'string') return 'z.string()';
+    if (typeof value === 'string') return 'z.string().trim()';
 
     if (isJsonArray(value)) {
         if (value.length === 0) return 'z.array(z.unknown())';
@@ -675,7 +675,7 @@ export default function JsonToInterfaceZodForm() {
                             value={jsonInput}
                             onChange={(e) => setJsonInput(e.target.value)}
                             placeholder='Nhập JSON của bạn vào đây...'
-                            className='min-h-[200px] font-mono text-sm'
+                            className='min-h-[200px] max-h-[300px] font-mono text-sm'
                         />
                     </div>
 
@@ -701,10 +701,26 @@ export default function JsonToInterfaceZodForm() {
                 {/* TypeScript Interface Output */}
                 <Card>
                     <CardHeader>
-                        <CardTitle>TypeScript Interface</CardTitle>
-                        <CardDescription>
-                            Kết quả TypeScript interface được generate tự động
-                        </CardDescription>
+                        <div className='flex justify-between items-start'>
+                            <div>
+                                <CardTitle>TypeScript Interface</CardTitle>
+                                <CardDescription>
+                                    Kết quả TypeScript interface được generate
+                                    tự động
+                                </CardDescription>
+                            </div>
+                            {interfaceOutput && (
+                                <div className='flex gap-2'>
+                                    <Button
+                                        onClick={handleCopyInterface}
+                                        variant='outline'
+                                        size='sm'
+                                    >
+                                        Sao chép
+                                    </Button>
+                                </div>
+                            )}
+                        </div>
                     </CardHeader>
                     <CardContent className='space-y-4'>
                         <div className='space-y-2'>
@@ -740,10 +756,25 @@ export default function JsonToInterfaceZodForm() {
                 {/* Zod Schema Output */}
                 <Card>
                     <CardHeader>
-                        <CardTitle>Zod Schema</CardTitle>
-                        <CardDescription>
-                            Kết quả Zod schema được generate tự động
-                        </CardDescription>
+                        <div className='flex justify-between items-start'>
+                            <div>
+                                <CardTitle>Zod Schema</CardTitle>
+                                <CardDescription>
+                                    Kết quả Zod schema được generate tự động
+                                </CardDescription>
+                            </div>
+                            {zodOutput && (
+                                <div className='flex gap-2'>
+                                    <Button
+                                        onClick={handleCopyZod}
+                                        variant='outline'
+                                        size='sm'
+                                    >
+                                        Sao chép
+                                    </Button>
+                                </div>
+                            )}
+                        </div>
                     </CardHeader>
                     <CardContent className='space-y-4'>
                         <div className='space-y-2'>

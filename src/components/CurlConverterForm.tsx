@@ -25,6 +25,7 @@ export default function CurlConverterForm() {
     const [isMutation, setIsMutation] = useState(false);
     const [isInfiniteQuery, setIsInfiniteQuery] = useState(false);
     const [responseData, setResponseData] = useState('');
+    const [pathParams, setPathParams] = useState('');
     const [sourceTypeCase, setSourceTypeCase] = useState<
         | 'camelCase'
         | 'PascalCase'
@@ -66,6 +67,34 @@ export default function CurlConverterForm() {
                 }
             }
 
+            let parsedPathParams: Record<string, unknown> | undefined;
+            if (pathParams.trim()) {
+                try {
+                    // Parse format key:value\nkey:value
+                    const lines = pathParams.trim().split('\n');
+                    parsedPathParams = {};
+                    for (const line of lines) {
+                        const [key, ...valueParts] = line.split(':');
+                        if (key && valueParts.length > 0) {
+                            const value = valueParts.join(':').trim();
+                            // Try to parse as number, boolean, or keep as string
+                            if (!isNaN(Number(value)) && value.trim() !== '') {
+                                parsedPathParams[key.trim()] = Number(value);
+                            } else if (value.toLowerCase() === 'true') {
+                                parsedPathParams[key.trim()] = true;
+                            } else if (value.toLowerCase() === 'false') {
+                                parsedPathParams[key.trim()] = false;
+                            } else {
+                                parsedPathParams[key.trim()] = value;
+                            }
+                        }
+                    }
+                } catch {
+                    setError('Path Params không đúng định dạng key:value');
+                    return;
+                }
+            }
+
             const options: ConvertOptions = {
                 entityName,
                 operationName,
@@ -73,6 +102,7 @@ export default function CurlConverterForm() {
                 isMutation,
                 isInfiniteQuery,
                 responseData: parsedResponseData,
+                pathParams: parsedPathParams,
                 sourceTypeCase,
                 targetTypeCase,
                 hasParams: true,
@@ -249,6 +279,22 @@ export default function CurlConverterForm() {
                         </div>
                     </div>
 
+                    <div>
+                        <Label htmlFor='path-params'>Path Params</Label>
+                        <Textarea
+                            id='path-params'
+                            placeholder='Ví dụ: id:123\nuserId:456\nname:John'
+                            value={pathParams}
+                            onChange={(e) => setPathParams(e.target.value)}
+                            className='min-h-[80px] max-h-[200px]'
+                        />
+                        <div className='text-xs text-gray-500 dark:text-gray-400'>
+                            Nhập path params theo format key:value (mỗi dòng một
+                            cặp). Với GET sẽ đưa vào params, các method khác sẽ
+                            đưa vào body
+                        </div>
+                    </div>
+
                     <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
                         <div>
                             <Label htmlFor='source-type-case'>
@@ -323,11 +369,12 @@ export default function CurlConverterForm() {
                         <Button
                             onClick={() => {
                                 setCurlCommand(
-                                    'curl -X GET "https://api.example.com/formimport/get-list?keyword=test&pageIndex=1&pageSize=10" -H "Authorization: Bearer token" -H "Content-Type: application/json"',
+                                    'curl -X GET "https://api.example.com/users/123/posts" -H "Authorization: Bearer token" -H "Content-Type: application/json"',
                                 );
                                 setResponseData(
                                     '{"Data": [{"id": 1, "name": "John Doe", "email": "john@example.com", "createdAt": "2024-01-01T00:00:00Z"}], "StatusCode": 200, "Message": "Success", "TotalRecord": 1}',
                                 );
+                                setPathParams('id:123');
                                 setSourceTypeCase(undefined);
                                 setTargetTypeCase(undefined);
                                 setIsInfiniteQuery(true);

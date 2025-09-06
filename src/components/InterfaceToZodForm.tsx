@@ -174,7 +174,7 @@ function getZodType(tsType: string): string {
     // Basic types
     switch (normalizedType) {
         case 'string':
-            return 'z.string()';
+            return 'z.string().trim()';
         case 'number':
             return 'z.number()';
         case 'boolean':

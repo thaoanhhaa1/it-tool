@@ -466,11 +466,20 @@ export default function JsonConverterForm() {
             {/* Input Section */}
             <Card>
                 <CardHeader>
-                    <CardTitle>JSON Input</CardTitle>
-                    <CardDescription>
-                        Nhập JSON của bạn vào đây để chuyển đổi sang TypeScript
-                        interface
-                    </CardDescription>
+                    <div className='flex justify-between items-start'>
+                        <div>
+                            <CardTitle>JSON Input</CardTitle>
+                            <CardDescription>
+                                Nhập JSON của bạn vào đây để chuyển đổi sang
+                                TypeScript interface
+                            </CardDescription>
+                        </div>
+                        <div className='flex gap-2'>
+                            <Button onClick={handleConvert} size='sm'>
+                                Chuyển đổi
+                            </Button>
+                        </div>
+                    </div>
                 </CardHeader>
                 <CardContent className='space-y-4'>
                     <div className='space-y-2'>
@@ -546,10 +555,11 @@ export default function JsonConverterForm() {
                     </div>
 
                     <div className='flex gap-2'>
-                        <Button onClick={handleConvert} className='flex-1'>
-                            Chuyển đổi
-                        </Button>
-                        <Button onClick={handleLoadSample} variant='outline'>
+                        <Button
+                            onClick={handleLoadSample}
+                            variant='outline'
+                            className='flex-1'
+                        >
                             Tải mẫu
                         </Button>
                     </div>
@@ -565,10 +575,26 @@ export default function JsonConverterForm() {
             {/* Output Section */}
             <Card>
                 <CardHeader>
-                    <CardTitle>TypeScript Interface</CardTitle>
-                    <CardDescription>
-                        Kết quả TypeScript interface được generate tự động
-                    </CardDescription>
+                    <div className='flex justify-between items-start'>
+                        <div>
+                            <CardTitle>TypeScript Interface</CardTitle>
+                            <CardDescription>
+                                Kết quả TypeScript interface được generate tự
+                                động
+                            </CardDescription>
+                        </div>
+                        {typescriptOutput && (
+                            <div className='flex gap-2'>
+                                <Button
+                                    onClick={handleCopy}
+                                    variant='outline'
+                                    size='sm'
+                                >
+                                    Sao chép
+                                </Button>
+                            </div>
+                        )}
+                    </div>
                 </CardHeader>
                 <CardContent className='space-y-4'>
                     <div className='space-y-2'>
@@ -582,20 +608,9 @@ export default function JsonConverterForm() {
                         />
                     </div>
 
-                    {typescriptOutput && (
-                        <div className='space-y-2'>
-                            <Button
-                                onClick={handleCopy}
-                                variant='outline'
-                                className='w-full'
-                            >
-                                Sao chép vào Clipboard
-                            </Button>
-                            {copySuccess && (
-                                <div className='p-3 bg-green-100 border border-green-400 text-green-700 rounded-md text-center'>
-                                    ✓ Đã sao chép thành công vào clipboard!
-                                </div>
-                            )}
+                    {copySuccess && (
+                        <div className='p-3 bg-green-100 border border-green-400 text-green-700 rounded-md text-center'>
+                            ✓ Đã sao chép thành công vào clipboard!
                         </div>
                     )}
                 </CardContent>

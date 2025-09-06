@@ -31,6 +31,7 @@ export interface ConvertOptions {
     hasParams?: boolean;
     hasBody?: boolean;
     responseData?: Record<string, unknown> | Record<string, unknown>[];
+    pathParams?: Record<string, unknown>;
     sourceTypeCase?: TypeCase;
     targetTypeCase?: TypeCase;
 }
@@ -331,13 +332,14 @@ export class CurlConverter {
     private static generateZodSchema(
         fields: SchemaField[],
         isParams: boolean = false,
+        pathParams?: string[],
     ): string {
         const generateFieldType = (field: SchemaField): string => {
             let zodType: string;
 
             switch (field.type) {
                 case 'string':
-                    zodType = 'z.string()';
+                    zodType = 'z.string().trim()';
                     break;
                 case 'number':
                     zodType = 'z.number()';
@@ -346,13 +348,14 @@ export class CurlConverter {
                     zodType = 'z.boolean()';
                     break;
                 case 'date':
-                    zodType = 'z.string()';
+                    zodType = 'z.string().trim()';
                     break;
                 case 'array':
                     if (field.arrayType === 'object' && field.objectFields) {
                         const objectSchema = this.generateZodSchema(
                             field.objectFields,
                             isParams,
+                            pathParams,
                         );
                         zodType = `z.array(${objectSchema})`;
                     } else {
@@ -361,7 +364,7 @@ export class CurlConverter {
                             arrayItemType === 'unknown'
                                 ? 'z.unknown()'
                                 : arrayItemType === 'string'
-                                ? 'z.string()'
+                                ? 'z.string().trim()'
                                 : arrayItemType === 'number'
                                 ? 'z.number()'
                                 : arrayItemType === 'boolean'
@@ -375,6 +378,7 @@ export class CurlConverter {
                         zodType = this.generateZodSchema(
                             field.objectFields,
                             isParams,
+                            pathParams,
                         );
                     } else {
                         zodType = 'z.record(z.unknown())';
@@ -382,6 +386,12 @@ export class CurlConverter {
                     break;
                 default:
                     zodType = 'z.unknown()';
+            }
+
+            // Path params không được optional
+            const isPathParam = pathParams && pathParams.includes(field.name);
+            if (isPathParam) {
+                return zodType;
             }
 
             if (isParams) {
@@ -404,13 +414,14 @@ export class CurlConverter {
         sourceTypeCase?: TypeCase,
         targetTypeCase?: TypeCase,
         isParams: boolean = false,
+        pathParams?: string[],
     ): string {
         const fields = this.analyzeObjectStructure(
             data as Record<string, unknown>,
             sourceTypeCase,
             targetTypeCase,
         );
-        const zodSchema = this.generateZodSchema(fields, isParams);
+        const zodSchema = this.generateZodSchema(fields, isParams, pathParams);
 
         return `const ${schemaName}Schema = ${zodSchema};\n\nexport type ${
             schemaName.charAt(0).toUpperCase() + schemaName.slice(1)
@@ -746,8 +757,8 @@ export class CurlConverter {
         entityName: string,
         operationName: string,
     ): string {
-        const { isInfiniteQuery } = options;
-        const hasSchema = Boolean(curlObj.params || curlObj.body);
+        const { isInfiniteQuery, pathParams } = options;
+        const hasSchema = Boolean(curlObj.params || curlObj.body || pathParams);
 
         const schemaName = `${operationName}${this.toPascalCase(
             entityName,
@@ -778,15 +789,15 @@ export class CurlConverter {
         }
 
         return `export const ${serviceName} = new QueryService({
-          name: '${entityName}-${operationName}',${
-            hasSchema ? `\n  schema: ${schemaName},` : ''
+    name: '${entityName}-${operationName}',${
+            hasSchema ? `\n    schema: ${schemaName},` : ''
         }
-          fn: ({ signal${
-              hasSchema ? ', payload' : ''
-          } }) => ${entityName}Api.${operationName}(${
+    fn: ({ signal${
+        hasSchema ? ', payload' : ''
+    } }) => ${entityName}Api.${operationName}(${
             hasSchema ? 'payload, ' : ''
         }{ signal }),
-        });`;
+});`;
     }
 
     private static generateMutation(
@@ -795,7 +806,8 @@ export class CurlConverter {
         entityName: string,
         operationName: string,
     ): string {
-        const hasBody = Boolean(curlObj.body);
+        const { pathParams } = options;
+        const hasBody = Boolean(curlObj.body || pathParams);
 
         const schemaName = hasBody
             ? `${this.toPascalCase(
@@ -825,14 +837,66 @@ export class CurlConverter {
         entityName: string,
         operationName: string,
     ): string {
-        const { responseType, responseData, isInfiniteQuery } = options;
+        const { responseType, responseData, isInfiniteQuery, pathParams } =
+            options;
         const { method, url } = curlObj;
 
         const urlObj = new URL(url);
-        const cleanPath = urlObj.pathname;
+        let cleanPath = urlObj.pathname;
 
-        const hasParams = Boolean(curlObj.params);
-        const hasBody = Boolean(curlObj.body);
+        // Detect và replace path params trong URL
+        const usedPathParams: string[] = [];
+        if (pathParams) {
+            // Thay thế các pattern path params (:key, {key}, [key])
+            Object.keys(pathParams).forEach((key) => {
+                const pathParamPattern = new RegExp(
+                    `:${key}|\\{${key}\\}|\\[${key}\\]`,
+                    'g',
+                );
+                if (pathParamPattern.test(cleanPath)) {
+                    cleanPath = cleanPath.replace(
+                        pathParamPattern,
+                        `\${${key}}`,
+                    );
+                    usedPathParams.push(key);
+                }
+            });
+
+            // Thay thế các value trong path params bằng key
+            Object.entries(pathParams).forEach(([key, value]) => {
+                if (typeof value === 'string' || typeof value === 'number') {
+                    const valueStr = String(value);
+                    const valuePattern = new RegExp(`/${valueStr}(?=/|$)`, 'g');
+                    if (valuePattern.test(cleanPath)) {
+                        cleanPath = cleanPath.replace(
+                            valuePattern,
+                            `/\${${key}}`,
+                        );
+                        if (!usedPathParams.includes(key)) {
+                            usedPathParams.push(key);
+                        }
+                    }
+                }
+            });
+        }
+
+        // Với GET method, path params không được replace sẽ được đưa vào params
+        // Với các method khác, path params không được replace sẽ được đưa vào body
+        const isGetMethod = method === 'GET';
+        const remainingPathParams = pathParams
+            ? Object.fromEntries(
+                  Object.entries(pathParams).filter(
+                      ([key]) => !usedPathParams.includes(key),
+                  ),
+              )
+            : undefined;
+
+        const hasParams = Boolean(
+            curlObj.params || (remainingPathParams && isGetMethod),
+        );
+        const hasBody = Boolean(
+            curlObj.body || (remainingPathParams && !isGetMethod),
+        );
         const hasConfig = true;
 
         let paramType = '';
@@ -857,31 +921,115 @@ export class CurlConverter {
             : '';
         const configType = hasConfig ? `config?: AxiosRequestConfig` : '';
 
-        const parameters = [paramType, bodyType, configType]
-            .filter(Boolean)
-            .join(', ');
+        // Tạo parameters với destructuring cho path params và rest cho others
+        const hasExistingParams =
+            curlObj.params ||
+            isInfiniteQuery ||
+            (remainingPathParams && isGetMethod);
+        const hasExistingBody =
+            curlObj.body || (remainingPathParams && !isGetMethod);
+
+        const parameters: string[] = [];
+
+        // Thêm path params với destructuring
+        if (usedPathParams.length > 0) {
+            if (hasExistingParams && method !== 'DELETE') {
+                // Destructure path params từ params (không áp dụng cho DELETE)
+                const pathParamsDestructure = `{ ${usedPathParams.join(
+                    ', ',
+                )}, ...params }`;
+                parameters.push(
+                    `${pathParamsDestructure}: ${paramType.replace('?', '')}`,
+                );
+            } else if (hasExistingBody && method !== 'DELETE') {
+                // Destructure path params từ body (không áp dụng cho DELETE)
+                const pathParamsDestructure = `{ ${usedPathParams.join(
+                    ', ',
+                )}, ...restBody }`;
+                parameters.push(
+                    `${pathParamsDestructure}: ${bodyType.replace(
+                        'body: ',
+                        '',
+                    )}`,
+                );
+            } else {
+                // Path params riêng (áp dụng cho DELETE hoặc khi không có params/body)
+                const pathParamsDestructure = `{ ${usedPathParams.join(
+                    ', ',
+                )} }`;
+                parameters.push(
+                    `${pathParamsDestructure}: ${this.toPascalCase(
+                        operationName,
+                    )}${this.toPascalCase(entityName)}PathParamsSchema`,
+                );
+            }
+        }
+
+        // Thêm các parameters khác
+        if (hasExistingParams && usedPathParams.length === 0) {
+            parameters.push(paramType);
+        }
+        if (
+            hasExistingBody &&
+            usedPathParams.length === 0 &&
+            method !== 'DELETE'
+        ) {
+            parameters.push(bodyType);
+        }
+        if (configType) {
+            parameters.push(configType);
+        }
+
+        const finalParameters = parameters.join(', ');
 
         const axiosMethod = method.toLowerCase();
         const axiosParams: string[] = [];
 
+        // Tạo endpoint với path params được replace
+        const pathWithParams = `\`${cleanPath}\``;
+
         if (method === 'GET' || method === 'DELETE') {
-            const fullUrl = `\`\${BASE_PATH}/${this.generateEndpoint(
-                cleanPath,
-            )}\``;
-            axiosParams.push(fullUrl);
+            // Sử dụng path params trong URL template với destructuring
+            let urlWithPathParams = pathWithParams;
+            if (usedPathParams.length > 0) {
+                // Sử dụng destructured path params trực tiếp
+                urlWithPathParams = `\`${cleanPath.replace(
+                    /\$\{(\w+)\}/g,
+                    (match, key) => `\${${key}}`,
+                )}\``;
+            }
+            axiosParams.push(urlWithPathParams);
+
+            // Sử dụng params cho query parameters
             if (hasParams || isInfiniteQuery || hasConfig) {
-                axiosParams.push(
-                    `{ ${
-                        hasParams || isInfiniteQuery ? 'params, ' : ''
-                    }...config }`,
-                );
+                if (usedPathParams.length > 0 && hasExistingParams) {
+                    axiosParams.push('{ params, ...config }');
+                } else if (hasParams || isInfiniteQuery) {
+                    axiosParams.push('{ params, ...config }');
+                } else {
+                    axiosParams.push('{ ...config }');
+                }
             }
         } else {
-            const fullUrl = `\`\${BASE_PATH}/${this.generateEndpoint(
-                cleanPath,
-            )}\``;
-            axiosParams.push(fullUrl);
-            if (hasBody) axiosParams.push('body');
+            // Sử dụng path params trong URL template với destructuring
+            let urlWithPathParams = pathWithParams;
+            if (usedPathParams.length > 0) {
+                // Sử dụng destructured path params trực tiếp
+                urlWithPathParams = `\`${cleanPath.replace(
+                    /\$\{(\w+)\}/g,
+                    (match, key) => `\${${key}}`,
+                )}\``;
+            }
+            axiosParams.push(urlWithPathParams);
+
+            // Sử dụng restBody cho body parameters (chỉ với POST/PUT/PATCH)
+            if (hasBody && !['DELETE'].includes(method)) {
+                if (usedPathParams.length > 0 && hasExistingBody) {
+                    axiosParams.push('restBody');
+                } else {
+                    axiosParams.push('body');
+                }
+            }
             if (hasConfig) axiosParams.push('config');
         }
 
@@ -897,14 +1045,12 @@ export class CurlConverter {
         }
 
         const defaultReturn = finalResponseType.includes('[]')
-            ? `{ Data: [] as ${finalResponseType}, StatusCode: 0, Message: '', TotalRecord: 0 }`
-            : `{ Data: {} as ${finalResponseType}, StatusCode: 0, Message: '' }`;
+            ? `{ data: [] as ${finalResponseType}, statusCode: 0, message: '', totalRecord: 0 }`
+            : `{ data: {} as ${finalResponseType}, statusCode: 0, message: '' }`;
 
         if (method === 'GET')
-            return `const BASE_PATH = '${this.generateBasePath(cleanPath)}';
-
-const ${entityName}Api = {
-    ${operationName}: async (${parameters}) => {
+            return `const ${entityName}Api = {
+    ${operationName}: async (${finalParameters}) => {
         try {
             const response = await axiosClient.${axiosMethod}<BaseResponse<${finalResponseType}>>(${axiosParams.join(
                 ', ',
@@ -918,11 +1064,9 @@ const ${entityName}Api = {
 
 export default ${entityName}Api;`;
 
-        return `const BASE_PATH = '${this.generateBasePath(cleanPath)}';
-
-const ${entityName}Api = {
-    ${operationName}: async (${parameters}) => {
-            await axiosClient.${axiosMethod}<BaseResponse<${finalResponseType}>>(${axiosParams.join(
+        return `const ${entityName}Api = {
+    ${operationName}: async (${finalParameters}) => {
+        await axiosClient.${axiosMethod}<BaseResponse<${finalResponseType}>>(${axiosParams.join(
             ', ',
         )});
     }
@@ -943,20 +1087,142 @@ export default ${entityName}Api;`;
             sourceTypeCase,
             targetTypeCase,
             isInfiniteQuery,
+            pathParams,
         } = options;
 
         let types = '';
 
-        if (curlObj.params || isInfiniteQuery) {
+        // Detect path params được sử dụng trong URL
+        const usedPathParams: string[] = [];
+        if (pathParams) {
+            // Detect các pattern path params (:key, {key}, [key])
+            Object.keys(pathParams).forEach((key) => {
+                const pathParamPattern = new RegExp(
+                    `:${key}|\\{${key}\\}|\\[${key}\\]`,
+                    'g',
+                );
+                if (pathParamPattern.test(curlObj.url)) {
+                    usedPathParams.push(key);
+                }
+            });
+
+            // Detect các value trong path params
+            Object.entries(pathParams).forEach(([key, value]) => {
+                if (typeof value === 'string' || typeof value === 'number') {
+                    const valueStr = String(value);
+                    const valuePattern = new RegExp(`/${valueStr}(?=/|$)`, 'g');
+                    if (valuePattern.test(curlObj.url)) {
+                        if (!usedPathParams.includes(key)) {
+                            usedPathParams.push(key);
+                        }
+                    }
+                }
+            });
+        }
+
+        // Xử lý params cho GET method hoặc infinite query (loại trừ path params đã được replace)
+        const isGetMethod = curlObj.method === 'GET';
+        const remainingPathParams = pathParams
+            ? Object.fromEntries(
+                  Object.entries(pathParams).filter(
+                      ([key]) => !usedPathParams.includes(key),
+                  ),
+              )
+            : undefined;
+
+        // Chỉ tạo schema riêng cho path params khi không có params/body
+        const hasExistingParams =
+            curlObj.params ||
+            isInfiniteQuery ||
+            (remainingPathParams && isGetMethod);
+        const hasExistingBody =
+            curlObj.body || (remainingPathParams && !isGetMethod);
+
+        if (
+            usedPathParams.length > 0 &&
+            !hasExistingParams &&
+            !hasExistingBody
+        ) {
+            const pathParamsData: Record<string, string | number> = {};
+            usedPathParams.forEach((key) => {
+                if (pathParams && pathParams[key] !== undefined) {
+                    const value = pathParams[key];
+                    if (
+                        typeof value === 'string' ||
+                        typeof value === 'number'
+                    ) {
+                        pathParamsData[key] = value;
+                    } else {
+                        pathParamsData[key] = String(value);
+                    }
+                }
+            });
+
+            const pathParamsSchemaName = `${operationName}${this.toPascalCase(
+                entityName,
+            )}PathParams`;
+            types +=
+                this.generateSchema(
+                    pathParamsData,
+                    pathParamsSchemaName,
+                    sourceTypeCase,
+                    targetTypeCase,
+                    false, // Path params không optional
+                    usedPathParams,
+                ) + '\n\n';
+        }
+
+        if (
+            curlObj.params ||
+            isInfiniteQuery ||
+            (remainingPathParams && isGetMethod)
+        ) {
             const schemaName = `${operationName}${this.toPascalCase(
                 entityName,
             )}Params`;
 
-            let paramsData = curlObj.params || {};
-            if (isInfiniteQuery && !curlObj.params) {
+            let paramsData: Record<string, string | number> =
+                curlObj.params || {};
+
+            // Merge path params vào params data
+            if (usedPathParams.length > 0 && isGetMethod) {
+                usedPathParams.forEach((key) => {
+                    if (pathParams && pathParams[key] !== undefined) {
+                        const value = pathParams[key];
+                        if (
+                            typeof value === 'string' ||
+                            typeof value === 'number'
+                        ) {
+                            paramsData[key] = value;
+                        } else {
+                            paramsData[key] = String(value);
+                        }
+                    }
+                });
+            }
+
+            if (remainingPathParams && isGetMethod) {
+                // Convert remainingPathParams to the correct type
+                const convertedPathParams: Record<string, string | number> = {};
+                Object.entries(remainingPathParams).forEach(([key, value]) => {
+                    if (
+                        typeof value === 'string' ||
+                        typeof value === 'number'
+                    ) {
+                        convertedPathParams[key] = value;
+                    } else {
+                        convertedPathParams[key] = String(value);
+                    }
+                });
+                paramsData = { ...paramsData, ...convertedPathParams };
+            }
+            if (isInfiniteQuery && !curlObj.params && !remainingPathParams) {
                 paramsData = { page: 1 };
-            } else if (isInfiniteQuery && curlObj.params) {
-                paramsData = { ...curlObj.params, page: 1 };
+            } else if (
+                isInfiniteQuery &&
+                (curlObj.params || remainingPathParams)
+            ) {
+                paramsData = { ...paramsData, page: 1 };
             }
 
             types +=
@@ -966,19 +1232,39 @@ export default ${entityName}Api;`;
                     sourceTypeCase,
                     targetTypeCase,
                     true,
+                    usedPathParams,
                 ) + '\n\n';
         }
 
-        if (curlObj.body) {
+        // Xử lý body cho non-GET methods (loại trừ path params đã được replace)
+        if (curlObj.body || (remainingPathParams && !isGetMethod)) {
             const schemaName = `${operationName}${entityName[0].toUpperCase()}${entityName.slice(
                 1,
             )}`;
+
+            let bodyData = curlObj.body || {};
+
+            // Merge path params vào body data
+            if (usedPathParams.length > 0 && !isGetMethod) {
+                usedPathParams.forEach((key) => {
+                    if (pathParams && pathParams[key] !== undefined) {
+                        bodyData[key] = pathParams[key];
+                    }
+                });
+            }
+
+            if (remainingPathParams && !isGetMethod) {
+                bodyData = { ...bodyData, ...remainingPathParams };
+            }
+
             types +=
                 this.generateSchema(
-                    curlObj.body,
+                    bodyData,
                     schemaName,
                     sourceTypeCase,
                     targetTypeCase,
+                    false,
+                    usedPathParams,
                 ) + '\n\n';
         }
 
@@ -1005,22 +1291,6 @@ export default ${entityName}Api;`;
         }
 
         return types;
-    }
-
-    private static generateBasePath(pathname: string): string {
-        const pathnameSplit = pathname.split('/');
-        const pathnameLength = pathnameSplit.length;
-
-        if (pathnameLength === 0) return '';
-        if (pathnameLength === 1 && !pathnameSplit.at(0)) return '';
-
-        return pathnameSplit.slice(0, -1).join('/');
-    }
-
-    private static generateEndpoint(pathname: string): string {
-        if (!pathname) return '';
-
-        return pathname.split('/').at(-1) || '';
     }
 
     public static convertCurlToObject(
