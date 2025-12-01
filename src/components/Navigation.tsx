@@ -21,6 +21,10 @@ const navItems = [
         label: 'JSON to Interface & Zod',
     },
     {
+        href: '/string-to-json',
+        label: 'Stringified JSON to JSON',
+    },
+    {
         href: '/html-to-jsx',
         label: 'HTML to JSX',
     },

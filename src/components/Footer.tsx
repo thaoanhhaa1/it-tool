@@ -30,6 +30,10 @@ export default function Footer() {
                 href: '/code-library',
                 label: 'Code Library',
             },
+            {
+                href: '/string-to-json',
+                label: 'Stringified JSON to JSON',
+            },
         ],
         resources: [
             {

@@ -93,6 +93,20 @@ export default function Home() {
             color: 'pink',
         },
         {
+            href: '/string-to-json',
+            title: 'Stringified JSON to JSON',
+            description:
+                'Parse chuỗi JSON đã được JSON.stringify (copy từ log, network, v.v) trở lại JSON object dễ đọc',
+            icon: '🧵',
+            features: [
+                'Parse chuỗi stringify',
+                'Hiển thị JSON format đẹp',
+                'Hỗ trợ debug log',
+                'Dán là xem ngay',
+            ],
+            color: 'cyan',
+        },
+        {
             href: '/html-to-jsx',
             title: 'HTML to JSX',
             description:
@@ -143,6 +157,7 @@ export default function Home() {
             indigo: 'hover:border-indigo-300 dark:hover:border-indigo-600 group-hover:text-indigo-600 dark:group-hover:text-indigo-400',
             yellow: 'hover:border-yellow-300 dark:hover:border-yellow-600 group-hover:text-yellow-600 dark:group-hover:text-yellow-400',
             pink: 'hover:border-pink-300 dark:hover:border-pink-600 group-hover:text-pink-600 dark:group-hover:text-pink-400',
+            cyan: 'hover:border-cyan-300 dark:hover:border-cyan-600 group-hover:text-cyan-600 dark:group-hover:text-cyan-400',
         };
         return colors[color as keyof typeof colors] || colors.blue;
     };
