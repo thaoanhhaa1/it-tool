@@ -50,6 +50,7 @@ export function NavigationClient({
                 items: toolItems.filter((item) =>
                     [
                         '/json-to-typescript',
+                        '/interface-json-compare',
                         '/json-to-interface-zod',
                         '/string-to-json',
                     ].includes(item.href),
@@ -81,11 +82,10 @@ export function NavigationClient({
                 {homeItem && (
                     <Link
                         href={homeItem.href}
-                        className={`relative py-4 px-1 inline-flex items-center text-sm font-medium transition-colors duration-200 ${
-                            pathname === homeItem.href
+                        className={`relative py-4 px-1 inline-flex items-center text-sm font-medium transition-colors duration-200 ${pathname === homeItem.href
                                 ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400'
                                 : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white border-b-2 border-transparent hover:border-gray-300'
-                        }`}
+                            }`}
                     >
                         <span className='font-medium'>{homeItem.label}</span>
                     </Link>
@@ -103,18 +103,16 @@ export function NavigationClient({
                             <button
                                 type='button'
                                 onClick={() => toggleGroup(group.title)}
-                                className={`inline-flex items-center gap-2 py-2.5 px-4 rounded-full text-sm font-medium border shadow-sm transition-all duration-200 ${
-                                    isActiveGroup || isOpen
+                                className={`inline-flex items-center gap-2 py-2.5 px-4 rounded-full text-sm font-medium border shadow-sm transition-all duration-200 ${isActiveGroup || isOpen
                                         ? 'bg-blue-50/80 text-blue-700 dark:bg-blue-900/40 dark:text-blue-200 border-blue-200 dark:border-blue-700 shadow-md'
                                         : 'bg-white/80 text-gray-700 dark:bg-gray-800/70 dark:text-gray-200 border-gray-200/80 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
-                                }`}
+                                    }`}
                                 aria-expanded={isOpen}
                             >
                                 <span>{group.title}</span>
                                 <svg
-                                    className={`w-4 h-4 transition-transform duration-200 ${
-                                        isOpen ? 'rotate-180' : ''
-                                    }`}
+                                    className={`w-4 h-4 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''
+                                        }`}
                                     viewBox='0 0 24 24'
                                     fill='none'
                                     stroke='currentColor'
@@ -142,11 +140,10 @@ export function NavigationClient({
                                                     key={item.href}
                                                     href={item.href}
                                                     onClick={closeGroups}
-                                                    className={`flex items-start gap-2 rounded-lg px-3 py-2 text-sm transition-colors duration-150 ${
-                                                        isActive
+                                                    className={`flex items-start gap-2 rounded-lg px-3 py-2 text-sm transition-colors duration-150 ${isActive
                                                             ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/40 dark:text-blue-200'
                                                             : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
-                                                    }`}
+                                                        }`}
                                                 >
                                                     <span className='mt-0.5 h-1.5 w-1.5 rounded-full bg-gray-300 dark:bg-gray-600' />
                                                     <span className='truncate'>
@@ -222,11 +219,10 @@ export function NavigationClient({
                                 key={item.href}
                                 href={item.href}
                                 onClick={closeMenu}
-                                className={`block px-4 py-3 text-sm font-medium transition-colors duration-200 ${
-                                    isActive
+                                className={`block px-4 py-3 text-sm font-medium transition-colors duration-200 ${isActive
                                         ? 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20'
                                         : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-700'
-                                }`}
+                                    }`}
                             >
                                 {item.label}
                             </Link>

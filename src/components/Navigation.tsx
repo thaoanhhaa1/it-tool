@@ -13,6 +13,10 @@ const navItems = [
         label: 'JSON to TypeScript',
     },
     {
+        href: '/interface-json-compare',
+        label: 'Interface ↔ JSON Compare',
+    },
+    {
         href: '/interface-to-zod',
         label: 'Interface to Zod',
     },

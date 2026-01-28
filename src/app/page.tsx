@@ -65,6 +65,20 @@ export default function Home() {
             color: 'blue',
         },
         {
+            href: '/interface-json-compare',
+            title: 'Interface ↔ JSON Compare',
+            description:
+                'So sánh TypeScript interface với JSON để phát hiện field thiếu/dư và sai kiểu dữ liệu',
+            icon: '🧩',
+            features: [
+                'Missing/extra fields',
+                'Type mismatch',
+                'Nested objects/arrays',
+                'Optional fields',
+            ],
+            color: 'green',
+        },
+        {
             href: '/interface-to-zod',
             title: 'Interface to Zod',
             description:
@@ -76,7 +90,7 @@ export default function Home() {
                 'Runtime checks',
                 'Error handling',
             ],
-            color: 'green',
+            color: 'purple',
         },
         {
             href: '/json-to-interface-zod',
