@@ -5,7 +5,7 @@ import Navigation from '../components/Navigation';
 export const metadata: Metadata = {
     title: 'It Tools - Bộ công cụ tiện ích miễn phí cho Developers',
     description:
-        'Bộ công cụ toàn diện cho developers: JSON to TypeScript, Interface to Zod, JSON to Interface & Zod, HTML to JSX, CURL Converter. Miễn phí, nhanh chóng, chính xác và không cần đăng ký.',
+        'Bộ công cụ toàn diện cho developers: JSON to TypeScript, Interface to Zod, JSON to Interface & Zod, HTML to JSX, CURL Converter, Data to Excel. Miễn phí, nhanh chóng, chính xác và không cần đăng ký.',
     keywords: [
         'it tools',
         'developer tools',
@@ -14,6 +14,7 @@ export const metadata: Metadata = {
         'JSON to Interface Zod converter',
         'HTML to JSX converter',
         'CURL converter',
+        'Data to Excel',
         'GraphQL converter',
         'programming tools',
         'code converter',
@@ -41,7 +42,7 @@ export const metadata: Metadata = {
         card: 'summary_large_image',
         title: 'It Tools - Bộ công cụ tiện ích miễn phí cho Developers',
         description:
-            'JSON to TypeScript, Interface to Zod, JSON to Interface & Zod, HTML to JSX, CURL Converter và nhiều công cụ khác. Miễn phí và không cần đăng ký.',
+            'JSON to TypeScript, Interface to Zod, HTML to JSX, CURL Converter, Data to Excel và nhiều công cụ khác. Miễn phí và không cần đăng ký.',
     },
     alternates: {
         canonical: 'https://it-tool-two.vercel.app',
@@ -149,6 +150,20 @@ export default function Home() {
             color: 'indigo',
         },
         {
+            href: '/data-to-excel',
+            title: 'Data to Excel',
+            description:
+                'Lấy dữ liệu từ cURL hoặc JSON, điền vào template Excel qua ánh xạ field với gợi ý AI',
+            icon: '📊',
+            features: [
+                'cURL / JSON nguồn',
+                'Upload template Excel',
+                'Gợi ý ánh xạ AI',
+                'Tải file đã điền',
+            ],
+            color: 'emerald',
+        },
+        {
             href: '/code-library',
             title: 'Code Library',
             description: 'Thư viện code mẫu và snippets hữu ích cho developers',
@@ -172,6 +187,8 @@ export default function Home() {
             yellow: 'hover:border-yellow-300 dark:hover:border-yellow-600 group-hover:text-yellow-600 dark:group-hover:text-yellow-400',
             pink: 'hover:border-pink-300 dark:hover:border-pink-600 group-hover:text-pink-600 dark:group-hover:text-pink-400',
             cyan: 'hover:border-cyan-300 dark:hover:border-cyan-600 group-hover:text-cyan-600 dark:group-hover:text-cyan-400',
+            emerald:
+                'hover:border-emerald-300 dark:hover:border-emerald-600 group-hover:text-emerald-600 dark:group-hover:text-emerald-400',
         };
         return colors[color as keyof typeof colors] || colors.blue;
     };
@@ -190,8 +207,9 @@ export default function Home() {
                         Bộ công cụ tiện ích dành cho developers. Chuyển đổi JSON
                         sang TypeScript interface, Interface sang Zod schema,
                         JSON sang cả Interface & Zod cùng lúc, HTML sang JSX
-                        component, và nhiều công cụ khác một cách nhanh chóng,
-                        miễn phí và dễ sử dụng.
+                        component, điền dữ liệu vào template Excel (Data to
+                        Excel), và nhiều công cụ khác một cách nhanh chóng, miễn
+                        phí và dễ sử dụng.
                     </p>
                     <div className='flex flex-wrap justify-center gap-4'>
                         <span className='px-4 py-2 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded-full text-sm font-medium'>
@@ -428,6 +446,25 @@ export default function Home() {
                             className='inline-flex items-center px-6 py-3 border-2 border-white text-white rounded-lg font-semibold hover:bg-white hover:text-blue-600 transition-colors'
                         >
                             Curl Converter
+                            <svg
+                                className='w-5 h-5 ml-2'
+                                fill='none'
+                                stroke='currentColor'
+                                viewBox='0 0 24 24'
+                            >
+                                <path
+                                    strokeLinecap='round'
+                                    strokeLinejoin='round'
+                                    strokeWidth={2}
+                                    d='M9 5l7 7-7 7'
+                                />
+                            </svg>
+                        </Link>
+                        <Link
+                            href='/data-to-excel'
+                            className='inline-flex items-center px-6 py-3 border-2 border-white text-white rounded-lg font-semibold hover:bg-white hover:text-blue-600 transition-colors'
+                        >
+                            Data to Excel
                             <svg
                                 className='w-5 h-5 ml-2'
                                 fill='none'

@@ -37,6 +37,10 @@ const navItems = [
         label: 'CURL Converter',
     },
     {
+        href: '/data-to-excel',
+        label: 'Data to Excel',
+    },
+    {
         href: '/code-library',
         label: 'Code Library',
     },
